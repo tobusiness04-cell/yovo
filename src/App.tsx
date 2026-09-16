@@ -12,7 +12,7 @@ import { Footer } from './components/Footer';
 import { ProductModal } from './components/ProductModal';
 import { ContactModal } from './components/ContactModal';
 import { AdminApp } from './components/admin/AdminApp';
-import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 import { initialProducts } from './data/products';
 import { storeConfig as defaultStoreConfig } from './config';
 import { Product, ProductPlan, Category, StoreConfig } from './types';
@@ -22,7 +22,7 @@ import {
   subscribeStoreSettings,
 } from './services/storeService';
 import { buildWhatsAppOrderUrl } from './lib/formatters';
-import { MessageCircle, Shield } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 function MainStorefront() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -33,8 +33,6 @@ function MainStorefront() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan | undefined>(undefined);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
-
-  const { isAuthenticated } = useAdminAuth();
 
   // Route state
   const [isAdminView, setIsAdminView] = useState<boolean>(() => {
@@ -62,12 +60,6 @@ function MainStorefront() {
       window.removeEventListener('hashchange', handleLocationChange);
     };
   }, []);
-
-  const navigateToAdmin = () => {
-    window.history.pushState({}, '', '/admin');
-    setIsAdminView(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const navigateToStore = () => {
     window.history.pushState({}, '', '/');
@@ -162,7 +154,6 @@ function MainStorefront() {
       <Navbar
         settings={settings}
         onOpenContact={() => setIsContactOpen(true)}
-        onNavigateAdmin={navigateToAdmin}
       />
 
       {/* Main Landing Page Content */}
@@ -192,7 +183,6 @@ function MainStorefront() {
       {/* Footer */}
       <Footer
         settings={settings}
-        onNavigateAdmin={navigateToAdmin}
       />
 
       {/* Product Details & Ordering Modal */}
@@ -227,17 +217,6 @@ function MainStorefront() {
             <span>راسلنا الآن</span>
           </button>
         </div>
-
-        {/* Floating Quick Admin Badge Button (shows for convenient admin access) */}
-        <button
-          type="button"
-          onClick={navigateToAdmin}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-[11px] font-bold shadow-md border border-slate-700/80 backdrop-blur-xs transition-all hover:scale-105"
-          title="الدخول إلى لوحة الإدارة"
-        >
-          <Shield className="w-3 h-3 text-sky-400" />
-          <span>{isAuthenticated ? 'لوحة الإدارة (نشط)' : 'لوحة الإدارة'}</span>
-        </button>
       </div>
 
     </div>

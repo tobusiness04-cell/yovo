@@ -186,7 +186,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             </div>
             <h3 className="text-sm font-bold text-slate-800 mb-1">لا توجد اشتراكات مضافة في المتجر حالياً</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              يتم تحديث قائمة الاشتراكات وقواعد البيانات بشكل مباشر. يمكنك تسجيل الدخول إلى لوحة الإدارة لإضافة اشتراكات جديدة أو تهيئة البيانات.
+              يتم تحديث قائمة الاشتراكات وقواعد البيانات بشكل مباشر. يرجى التواصل معنا للاستفسار عن أي اشتراك.
             </p>
           </div>
         ) : filteredProducts.length > 0 ? (

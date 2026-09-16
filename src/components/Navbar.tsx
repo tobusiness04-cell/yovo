@@ -6,13 +6,11 @@ import { StoreConfig } from '../types';
 interface NavbarProps {
   onOpenContact: () => void;
   settings?: StoreConfig;
-  onNavigateAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenContact,
   settings,
-  onNavigateAdmin,
 }) => {
   const currentSettings = settings || storeConfig;
   const [isOpen, setIsOpen] = useState(false);
@@ -70,16 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {link.label}
               </a>
             ))}
-            {onNavigateAdmin && (
-              <button
-                type="button"
-                onClick={onNavigateAdmin}
-                className="text-xs font-bold text-slate-400 hover:text-slate-700 py-1 transition-colors"
-                title="لوحة الإدارة"
-              >
-                لوحة الإدارة
-              </button>
-            )}
           </nav>
 
           {/* Desktop Action CTAs */}
@@ -144,20 +132,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <ArrowUpLeft className="w-4 h-4 text-slate-400" />
               </a>
             ))}
-
-            {onNavigateAdmin && (
-              <button
-                type="button"
-                onClick={() => {
-                  closeMobileMenu();
-                  onNavigateAdmin();
-                }}
-                className="text-base font-semibold text-slate-500 hover:text-slate-900 py-2 border-b border-slate-100 transition-colors flex items-center justify-between text-right"
-              >
-                <span>لوحة تحكم الإدارة (Admin)</span>
-                <ArrowUpLeft className="w-4 h-4 text-slate-400" />
-              </button>
-            )}
 
             <div className="pt-2 flex flex-col gap-2.5">
               <a

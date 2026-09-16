@@ -1,14 +1,13 @@
 import React from 'react';
-import { ArrowUpLeft, MessageCircle, Send, Shield } from 'lucide-react';
+import { ArrowUpLeft, MessageCircle, Send } from 'lucide-react';
 import { storeConfig } from '../config';
 import { StoreConfig } from '../types';
 
 interface FooterProps {
   settings?: StoreConfig;
-  onNavigateAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ settings, onNavigateAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ settings }) => {
   const currentSettings = settings || storeConfig;
   const currentYear = new Date().getFullYear();
 
@@ -95,18 +94,6 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigateAdmin }) => 
                   الأسئلة الشائعة
                 </a>
               </li>
-              {onNavigateAdmin && (
-                <li>
-                  <button
-                    type="button"
-                    onClick={onNavigateAdmin}
-                    className="text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-1"
-                  >
-                    <Shield className="w-3 h-3 text-sky-500" />
-                    <span>لوحة تحكم الإدارة</span>
-                  </button>
-                </li>
-              )}
             </ul>
           </div>
 

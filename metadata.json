@@ -1,0 +1,7 @@
+{
+  "name": "Yovo",
+  "description": "متجر اشتراكات رقمية وخدمات بريميوم في الجزائر بأسعار ومدد مرنة",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

@@ -1,0 +1,88 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Digital subscription product offered in the Yovo store",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "slug": { "type": "string", "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 50 },
+        "categoryId": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 500 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "price": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "duration": { "type": "string", "maxLength": 50 },
+        "features": { "type": "array" },
+        "available": { "type": "boolean" },
+        "popular": { "type": "boolean" },
+        "displayOrder": { "type": "number" },
+        "guarantee": { "type": "string", "maxLength": 300 },
+        "activationTime": { "type": "string", "maxLength": 100 },
+        "plans": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "currency", "duration", "available"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category grouping",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 50 },
+        "slug": { "type": "string", "maxLength": 50 },
+        "available": { "type": "boolean" },
+        "displayOrder": { "type": "number" }
+      },
+      "required": ["name", "slug"]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Global store configuration and contact details",
+      "type": "object",
+      "properties": {
+        "brandName": { "type": "string", "maxLength": 50 },
+        "instagramUrl": { "type": "string", "maxLength": 200 },
+        "whatsappUrl": { "type": "string", "maxLength": 200 },
+        "whatsappDisplay": { "type": "string", "maxLength": 50 },
+        "currency": { "type": "string", "maxLength": 10 },
+        "footerText": { "type": "string", "maxLength": 300 },
+        "guaranteeText": { "type": "string", "maxLength": 300 },
+        "independentBrandNotice": { "type": "string", "maxLength": 500 }
+      }
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized administrator record",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["admin", "superadmin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Digital subscription product documents"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Categories for filtering and organizing products"
+    },
+    "/settings/{settingsId}": {
+      "schema": "StoreSettings",
+      "description": "Store level settings such as contact links, currency, notices"
+    },
+    "/admins/{adminId}": {
+      "schema": "AdminUser",
+      "description": "Authorized administrator users"
+    }
+  }
+}

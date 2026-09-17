@@ -44,18 +44,38 @@ export interface Category {
   displayOrder: number;
 }
 
+export type SocialPlatformIcon =
+  | 'instagram'
+  | 'facebook'
+  | 'telegram'
+  | 'tiktok'
+  | 'messenger'
+  | 'youtube'
+  | 'x'
+  | 'custom';
+
+export interface SocialPlatform {
+  id: string;
+  name: string;
+  url: string;
+  handleOrDisplay?: string;
+  icon?: SocialPlatformIcon | string;
+  enabled: boolean;
+  isPrimaryOrderPlatform: boolean;
+  displayOrder: number;
+}
+
 export interface StoreConfig {
   brandName: string;
   brandTagline: string;
-  instagramUrl: string;
-  instagramUsername: string;
-  whatsappUrl: string;
-  whatsappDisplay: string;
+  instagramUrl?: string;
+  instagramUsername?: string;
   currency: string;
   defaultLanguage: string;
   guaranteeGeneralText: string;
   footerText: string;
   independentBrandNotice: string;
+  socialPlatforms?: SocialPlatform[];
 }
 
 export interface AdminUser {

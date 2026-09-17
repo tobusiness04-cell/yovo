@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, ShieldCheck, Clock, MessageCircle, Send, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Check, ShieldCheck, Clock, ArrowUpLeft, Sparkles, AlertCircle } from 'lucide-react';
 import { Product, ProductPlan, StoreConfig } from '../types';
-import { storeConfig } from '../config';
-import { formatPrice, buildWhatsAppOrderUrl } from '../lib/formatters';
+import { storeConfig, getPrimaryOrderPlatform, getEnabledSocialPlatforms, getOrderPlatformUrl } from '../config';
+import { formatPrice } from '../lib/formatters';
+import { SocialIcon } from './common/SocialIcon';
 
 interface ProductModalProps {
   product: Product | null;
@@ -47,13 +48,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const currentPrice = typeof currentPlan.price === 'number' ? currentPlan.price : product.price;
   const currentDuration = currentPlan.duration || product.duration;
 
-  // Contact links with custom prefilled messages
-  const whatsappLink = buildWhatsAppOrderUrl(
-    currentSettings.whatsappUrl,
-    product.name,
-    currentDuration,
-    currentPrice,
-    product.currency
+  // Resolve dynamic primary order platform
+  const primaryPlatform = getPrimaryOrderPlatform(currentSettings);
+  const primaryUrl = primaryPlatform?.url ? getOrderPlatformUrl(primaryPlatform.url) : '';
+  const primaryName = primaryPlatform?.name || 'Instagram';
+
+  // Other enabled platforms for secondary inquiries
+  const otherPlatforms = getEnabledSocialPlatforms(currentSettings).filter(
+    (p) => p.id !== primaryPlatform?.id
   );
 
   return (
@@ -182,30 +184,46 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           </div>
         </div>
 
-        {/* Conversion Action Buttons */}
+        {/* Dynamic Conversion Action Buttons */}
         {isAvailable ? (
-          <div className="space-y-2.5">
-            <a
-              id="order-via-whatsapp-btn"
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-xs flex items-center justify-center gap-2 transition-colors"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>اطلب الآن عبر WhatsApp</span>
-            </a>
+          <div className="space-y-3">
+            {primaryUrl ? (
+              <a
+                id="product-modal-order-btn"
+                href={primaryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98"
+              >
+                <SocialIcon icon={primaryPlatform?.icon} className="w-4 h-4 text-sky-400" />
+                <span>اطلب الآن عبر {primaryName}</span>
+                <ArrowUpLeft className="w-4 h-4" />
+              </a>
+            ) : (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs text-amber-800 font-medium flex items-center justify-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span>قناة استقبال الطلبات غير مهيئة حالياً في لوحة الإدارة.</span>
+              </div>
+            )}
 
-            <a
-              id="order-via-instagram-btn"
-              href={currentSettings.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3 px-4 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 flex items-center justify-center gap-2 transition-colors"
-            >
-              <Send className="w-3.5 h-3.5 text-slate-500" />
-              <span>أو تواصل معنا عبر Instagram DM</span>
-            </a>
+            {/* Other enabled channels (if configured) */}
+            {otherPlatforms.length > 0 && (
+              <div className="pt-2 flex items-center justify-center gap-3 text-xs text-slate-500">
+                <span>أو تواصل معنا عبر:</span>
+                {otherPlatforms.map((p) => (
+                  <a
+                    key={p.id}
+                    href={getOrderPlatformUrl(p.url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-slate-900 inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
+                  >
+                    <SocialIcon icon={p.icon} className="w-3 h-3 text-slate-600" />
+                    <span>{p.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-3 bg-slate-100 rounded-xl text-center text-xs text-slate-500 font-semibold flex items-center justify-center gap-2">

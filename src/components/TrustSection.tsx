@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Send, FileText, CheckCircle2 } from 'lucide-react';
 import { storeConfig } from '../config';
 
 export const TrustSection: React.FC = () => {
@@ -35,12 +35,12 @@ export const TrustSection: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80">
-              <div className="flex items-center gap-2 mb-2 text-emerald-400 font-bold text-xs">
-                <MessageCircle className="w-4 h-4" />
+              <div className="flex items-center gap-2 mb-2 text-sky-400 font-bold text-xs">
+                <Send className="w-4 h-4" />
                 <span>تواصل إنساني مباشر</span>
               </div>
               <p className="text-xs text-slate-300 leading-normal">
-                تتواصل معنا مباشرة عبر WhatsApp و Instagram دون روبوتات أو تعقيدات.
+                تتواصل معنا مباشرة عبر Instagram دون روبوتات أو تعقيدات.
               </p>
             </div>
 

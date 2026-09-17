@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, CreditCard, MessageCircle, CheckCircle } from 'lucide-react';
+import { Layers, CreditCard, Send, CheckCircle } from 'lucide-react';
 
 export const HowItWorks: React.FC = () => {
   const steps = [
@@ -18,8 +18,8 @@ export const HowItWorks: React.FC = () => {
     {
       number: '03',
       title: 'راسلنا',
-      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر WhatsApp أو Instagram مع تفاصيل طلبك.',
-      icon: MessageCircle,
+      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر Instagram مع تفاصيل طلبك.',
+      icon: Send,
     },
     {
       number: '04',

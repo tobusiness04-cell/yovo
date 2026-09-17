@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowUpLeft, MessageCircle, Send } from 'lucide-react';
-import { storeConfig } from '../config';
 import { StoreConfig } from '../types';
+import { storeConfig, getEnabledSocialPlatforms, getOrderPlatformUrl } from '../config';
+import { ArrowUpLeft, Star } from 'lucide-react';
+import { SocialIcon } from './common/SocialIcon';
 
 interface FooterProps {
   settings?: StoreConfig;
@@ -10,22 +11,22 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ settings }) => {
   const currentSettings = settings || storeConfig;
   const currentYear = new Date().getFullYear();
+  const enabledPlatforms = getEnabledSocialPlatforms(currentSettings);
 
   return (
-    <footer id="main-footer" className="bg-white border-t border-slate-200/80 pt-16 pb-12 text-right">
+    <footer id="footer" className="bg-slate-50 border-t border-slate-200/80 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-100">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-200">
           
-          {/* Brand Column */}
-          <div className="md:col-span-6 flex flex-col items-start text-right">
-            <a href="#hero" className="flex items-center gap-2.5 mb-4 group">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-brand font-bold text-xl shadow-xs">
-                <span className="text-sky-400">Y</span>
-                <span>o</span>
+          {/* Brand & Mission Column */}
+          <div className="md:col-span-6">
+            <a href="#hero" className="flex items-center gap-2.5 mb-4 inline-flex">
+              <div className="w-8 h-8 rounded-xl bg-slate-950 text-white flex items-center justify-center font-black text-base shadow-xs">
+                Y
               </div>
               <div className="flex flex-col">
-                <span className="font-brand font-extrabold text-2xl tracking-tight text-slate-900 leading-none">
+                <span className="font-brand font-black text-xl text-slate-950 tracking-tight leading-none">
                   {currentSettings.brandName}
                 </span>
                 <span className="text-[11px] font-medium text-slate-500 tracking-wide mt-0.5">
@@ -38,29 +39,34 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
               {currentSettings.footerText}
             </p>
 
-            <div className="flex items-center gap-3">
-              <a
-                id="footer-whatsapp-btn"
-                href={currentSettings.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>WhatsApp</span>
-              </a>
+            {/* Dynamic Social Platforms Badges */}
+            {enabledPlatforms.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2.5">
+                {enabledPlatforms.map((platform) => {
+                  const isPrimary = Boolean(platform.isPrimaryOrderPlatform);
+                  const targetUrl = getOrderPlatformUrl(platform.url);
 
-              <a
-                id="footer-instagram-btn"
-                href={currentSettings.instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-colors"
-              >
-                <Send className="w-3.5 h-3.5 text-slate-500" />
-                <span>Instagram</span>
-              </a>
-            </div>
+                  return (
+                    <a
+                      key={platform.id}
+                      id={`footer-social-${platform.id}`}
+                      href={targetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                        isPrimary
+                          ? 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800 shadow-2xs'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
+                      }`}
+                    >
+                      <SocialIcon icon={platform.icon} className="w-3.5 h-3.5" />
+                      <span>{platform.name}</span>
+                      {isPrimary && <Star className="w-2.5 h-2.5 fill-sky-400 text-sky-400 ml-0.5" />}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Quick Links Column */}
@@ -97,32 +103,29 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
             </ul>
           </div>
 
-          {/* Contact Column */}
+          {/* Contact & Orders Column */}
           <div className="md:col-span-3">
             <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">
               التواصل والطلب
             </h4>
             <p className="text-xs text-slate-500 leading-relaxed mb-3">
-              للطلب أو الاستفسار عن أي اشتراك غير معروض، راسلنا عبر قنواتنا الرسمية:
+              للطلب أو الاستفسار عن أي اشتراك، راسلنا مباشرة عبر قنواتنا الرسمية:
             </p>
             <ul className="space-y-2 text-xs">
-              <li className="flex items-center gap-2 text-slate-700">
-                <span className="font-semibold">Instagram:</span>
-                <a
-                  href={currentSettings.instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sky-600 hover:underline font-mono text-[11px]"
-                >
-                  {currentSettings.instagramUsername}
-                </a>
-              </li>
-              <li className="flex items-center gap-2 text-slate-700">
-                <span className="font-semibold">WhatsApp:</span>
-                <span className="text-slate-600 font-mono text-[11px]">
-                  {currentSettings.whatsappDisplay}
-                </span>
-              </li>
+              {enabledPlatforms.map((platform) => (
+                <li key={platform.id} className="flex items-center gap-2 text-slate-700">
+                  <span className="font-semibold">{platform.name}:</span>
+                  <a
+                    href={getOrderPlatformUrl(platform.url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-600 hover:underline font-mono text-[11px] inline-flex items-center gap-0.5"
+                  >
+                    <span>{platform.handleOrDisplay || platform.name}</span>
+                    <ArrowUpLeft className="w-2.5 h-2.5" />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

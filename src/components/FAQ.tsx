@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
+import { ChevronDown, HelpCircle, Send } from 'lucide-react';
 import { faqItems } from '../data/faq';
 
 interface FAQProps {
@@ -83,8 +83,8 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
             onClick={onOpenContact}
             className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-2 shrink-0"
           >
-            <MessageCircle className="w-4 h-4 text-sky-600" />
-            <span>اسألنا على WhatsApp أو Instagram</span>
+            <Send className="w-4 h-4 text-sky-600" />
+            <span>اسألنا على Instagram</span>
           </button>
         </div>
 

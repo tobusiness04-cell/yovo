@@ -14,15 +14,14 @@ import { ContactModal } from './components/ContactModal';
 import { AdminApp } from './components/admin/AdminApp';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { initialProducts } from './data/products';
-import { storeConfig as defaultStoreConfig } from './config';
+import { storeConfig as defaultStoreConfig, getPrimaryOrderPlatform, getOrderPlatformUrl } from './config';
 import { Product, ProductPlan, Category, StoreConfig } from './types';
 import {
   subscribeProducts,
   subscribeCategories,
   subscribeStoreSettings,
 } from './services/storeService';
-import { buildWhatsAppOrderUrl } from './lib/formatters';
-import { MessageCircle } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 function MainStorefront() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -119,20 +118,16 @@ function MainStorefront() {
   const handleOrderNow = (product: Product, plan?: ProductPlan) => {
     if (!product.available) return;
 
-    const targetPlan =
-      plan || (product.plans && product.plans.length > 0 ? product.plans[0] : undefined);
-    const duration = targetPlan ? targetPlan.duration : product.duration;
-    const price = targetPlan ? targetPlan.price : product.price;
+    // Resolve primary order platform dynamically
+    const primaryPlatform = getPrimaryOrderPlatform(settings);
+    const orderUrl = primaryPlatform ? getOrderPlatformUrl(primaryPlatform.url) : '';
 
-    const orderUrl = buildWhatsAppOrderUrl(
-      settings.whatsappUrl || defaultStoreConfig.whatsappUrl,
-      product.name,
-      duration,
-      price,
-      product.currency || settings.currency
-    );
-
-    window.open(orderUrl, '_blank', 'noopener,noreferrer');
+    if (orderUrl) {
+      window.open(orderUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      setSelectedProduct(product);
+      setSelectedPlan(plan);
+    }
   };
 
   // Render Admin View if on /admin
@@ -210,11 +205,11 @@ function MainStorefront() {
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
-            className="flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg text-xs font-bold active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg text-xs font-bold active:scale-95 transition-all"
             aria-label="تواصل معنا فوراً"
           >
-            <MessageCircle className="w-4 h-4" />
-            <span>راسلنا الآن</span>
+            <Send className="w-4 h-4 text-sky-400" />
+            <span>تواصل معنا</span>
           </button>
         </div>
       </div>

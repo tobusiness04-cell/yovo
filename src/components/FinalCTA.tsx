@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpLeft, MessageCircle } from 'lucide-react';
+import { ArrowUpLeft, Send } from 'lucide-react';
 
 interface FinalCTAProps {
   onOpenContact: () => void;
@@ -47,7 +47,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenContact }) => {
                 onClick={onOpenContact}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-800 hover:bg-slate-750 border border-slate-700 transition-all active:scale-98"
               >
-                <MessageCircle className="w-4 h-4 text-sky-400" />
+                <Send className="w-4 h-4 text-sky-400" />
                 <span>راسلنا الآن</span>
               </button>
             </div>

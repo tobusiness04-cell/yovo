@@ -4,7 +4,7 @@ import { TestimonialItem } from '../types';
  * Reusable Testimonial / Feedback Data Structure
  * 
  * NOTE: These are clearly marked template placeholders.
- * Replace with verified customer feedback received via Instagram or WhatsApp
+ * Replace with verified customer feedback received via Instagram
  * without touching the layout components.
  */
 export const testimonialItems: TestimonialItem[] = [
@@ -20,7 +20,7 @@ export const testimonialItems: TestimonialItem[] = [
     id: 'test-2',
     customerName: 'اسم العميل (نموذج 2)',
     service: 'CapCut Pro',
-    text: 'تقييم العميل هنا: "أحسن تجربة، كل المميزات تخدم بدون مشاكل والتواصل عبر واتساب كان واضح."',
+    text: 'تقييم العميل هنا: "أحسن تجربة، كل المميزات تخدم بدون مشاكل والتواصل عبر إنستغرام كان سريع وواضح."',
     date: 'مؤخراً',
     isPlaceholderNote: 'مساحة مخصصة لآراء العملاء الحقيقية',
   },

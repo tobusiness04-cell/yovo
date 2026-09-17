@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpLeft, MessageCircle, Send } from 'lucide-react';
+import { Menu, X, ArrowUpLeft, Send } from 'lucide-react';
 import { storeConfig, navLinks } from '../config';
 import { StoreConfig } from '../types';
 
@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenContact}
               className="text-xs font-semibold px-3.5 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <MessageCircle className="w-3.5 h-3.5 text-slate-500" />
+              <Send className="w-3.5 h-3.5 text-slate-500" />
               <span>تواصل معنا</span>
             </button>
 
@@ -152,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="w-full text-center py-2.5 rounded-xl font-semibold text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4 text-slate-500" />
-                <span>تواصل معنا (WhatsApp / Instagram)</span>
+                <span>تواصل معنا عبر Instagram</span>
               </button>
             </div>
           </div>

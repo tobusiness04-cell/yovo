@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpLeft, MessageCircle, Sparkles, ShieldCheck, Zap, Layers, CheckCircle2 } from 'lucide-react';
+import { ArrowUpLeft, Send, Sparkles, ShieldCheck, Zap, Layers, CheckCircle2 } from 'lucide-react';
 import { Product } from '../types';
 import { formatPrice } from '../lib/formatters';
 
@@ -81,7 +81,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                 onClick={onOpenContact}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-2xs transition-all active:scale-98"
               >
-                <MessageCircle className="w-4 h-4 text-slate-500" />
+                <Send className="w-4 h-4 text-slate-500" />
                 <span>تواصل معنا</span>
               </button>
             </div>
@@ -201,7 +201,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                 <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                   <span className="flex items-center gap-1 text-slate-700 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5 text-sky-500" />
-                    دعم سريع عبر WhatsApp و Instagram
+                    دعم سريع عبر Instagram
                   </span>
                   <span className="font-semibold text-slate-900">100% شفافية</span>
                 </div>

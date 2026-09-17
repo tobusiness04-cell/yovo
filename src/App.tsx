@@ -14,13 +14,23 @@ import { ContactModal } from './components/ContactModal';
 import { AdminApp } from './components/admin/AdminApp';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { initialProducts } from './data/products';
-import { storeConfig as defaultStoreConfig, getPrimaryOrderPlatform, getOrderPlatformUrl } from './config';
+import {
+  storeConfig as defaultStoreConfig,
+  getPrimaryOrderPlatform,
+  getOrderPlatformUrl,
+  generateOrderMessage,
+} from './config';
 import { Product, ProductPlan, Category, StoreConfig } from './types';
 import {
   subscribeProducts,
   subscribeCategories,
   subscribeStoreSettings,
 } from './services/storeService';
+import { copyTextToClipboard } from './lib/clipboard';
+import {
+  OrderConfirmationToast,
+  OrderConfirmationData,
+} from './components/common/OrderConfirmationToast';
 import { Send } from 'lucide-react';
 
 function MainStorefront() {
@@ -32,6 +42,7 @@ function MainStorefront() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan | undefined>(undefined);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
+  const [orderToastData, setOrderToastData] = useState<OrderConfirmationData | null>(null);
 
   // Route state
   const [isAdminView, setIsAdminView] = useState<boolean>(() => {
@@ -114,20 +125,45 @@ function MainStorefront() {
     setSelectedPlan(plan);
   };
 
-  // When clicking "اطلب الآن" on card
-  const handleOrderNow = (product: Product, plan?: ProductPlan) => {
+  // When clicking "اطلب الآن" on card or inside modal
+  const handleOrderNow = async (product: Product, plan?: ProductPlan) => {
     if (!product.available) return;
+
+    // Resolve target plan (passed plan or first plan)
+    const targetPlan =
+      plan || (product.plans && product.plans.length > 0 ? product.plans[0] : undefined);
+
+    // 1. Generate dynamic order message based on product, plan & admin template
+    const orderMessage = generateOrderMessage(
+      settings.orderMessageTemplate,
+      product,
+      targetPlan,
+      product.currency || settings.currency
+    );
 
     // Resolve primary order platform dynamically
     const primaryPlatform = getPrimaryOrderPlatform(settings);
     const orderUrl = primaryPlatform ? getOrderPlatformUrl(primaryPlatform.url) : '';
+    const platformName = primaryPlatform?.name || 'Instagram';
+    const platformIcon = primaryPlatform?.icon;
 
+    // 2. Open primary social platform in new browser tab
     if (orderUrl) {
       window.open(orderUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      setSelectedProduct(product);
-      setSelectedPlan(plan);
     }
+
+    // 3. Automatically copy generated order message to customer's clipboard
+    const copiedSuccessfully = await copyTextToClipboard(orderMessage);
+
+    // 4. Trigger the confirmation toast explaining to paste into DM
+    setOrderToastData({
+      productName: product.name,
+      orderMessage,
+      platformName,
+      platformUrl: orderUrl,
+      platformIcon: typeof platformIcon === 'string' ? platformIcon : undefined,
+      copiedSuccessfully,
+    });
   };
 
   // Render Admin View if on /admin
@@ -189,6 +225,13 @@ function MainStorefront() {
           setSelectedProduct(null);
           setSelectedPlan(undefined);
         }}
+        onOrderNow={handleOrderNow}
+      />
+
+      {/* Dynamic Order Confirmation Toast */}
+      <OrderConfirmationToast
+        data={orderToastData}
+        onClose={() => setOrderToastData(null)}
       />
 
       {/* General Contact Modal */}

@@ -76,6 +76,7 @@ export interface StoreConfig {
   footerText: string;
   independentBrandNotice: string;
   socialPlatforms?: SocialPlatform[];
+  orderMessageTemplate?: string;
 }
 
 export interface AdminUser {

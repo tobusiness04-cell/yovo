@@ -77,6 +77,47 @@ export function getOrderPlatformUrl(platformUrl?: string): string {
 }
 
 /**
+ * Default order message template with variable placeholders:
+ * {product} - The product name
+ * {plan} - The chosen duration or plan title
+ * {price} - The formatted price with currency
+ */
+export const DEFAULT_ORDER_MESSAGE_TEMPLATE =
+  'سلام Yovo 👋 حاب نطلب اشتراك: {product} – {plan} – {price}.\nمن فضلك ابعثلي تفاصيل الدفع والتفعيل.';
+
+/**
+ * Builds the dynamic pre-filled order text based on product, plan, and settings template.
+ */
+export function generateOrderMessage(
+  template: string | undefined,
+  product: { name: string; currency?: string; price?: number | string },
+  plan?: { duration?: string; price?: number | string },
+  fallbackCurrency: string = 'دج'
+): string {
+  const tpl = (template && template.trim()) || DEFAULT_ORDER_MESSAGE_TEMPLATE;
+  const productName = product.name || 'الاشتراك';
+  const planDuration = plan?.duration || 'اشتراك كامل';
+  const rawPrice =
+    plan?.price !== undefined && plan?.price !== ''
+      ? plan.price
+      : product.price !== undefined
+      ? product.price
+      : 0;
+  const currency = product.currency || fallbackCurrency;
+  const formattedPrice = `${rawPrice} ${currency}`.trim();
+
+  return tpl
+    .replace(/\{product\}/gi, productName)
+    .replace(/\{المنتج\}/gi, productName)
+    .replace(/\{plan\}/gi, planDuration)
+    .replace(/\{الخطة\}/gi, planDuration)
+    .replace(/\{المدة\}/gi, planDuration)
+    .replace(/\{price\}/gi, formattedPrice)
+    .replace(/\{السعر\}/gi, formattedPrice)
+    .trim();
+}
+
+/**
  * Central Store Configuration for Yovo
  */
 export const storeConfig: StoreConfig = {
@@ -89,6 +130,9 @@ export const storeConfig: StoreConfig = {
 
   // Dynamic social platforms (editable in Admin Panel)
   socialPlatforms: defaultSocialPlatforms,
+
+  // Order message template for clipboard copying
+  orderMessageTemplate: DEFAULT_ORDER_MESSAGE_TEMPLATE,
 
   // Currency used across all price calculations
   currency: 'دج',

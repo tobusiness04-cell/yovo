@@ -10,6 +10,7 @@ interface ProductModalProps {
   initialPlan?: ProductPlan;
   settings?: StoreConfig;
   onClose: () => void;
+  onOrderNow?: (product: Product, plan?: ProductPlan) => void;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
@@ -17,6 +18,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   initialPlan,
   settings,
   onClose,
+  onOrderNow,
 }) => {
   const currentSettings = settings || storeConfig;
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
@@ -188,17 +190,23 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         {isAvailable ? (
           <div className="space-y-3">
             {primaryUrl ? (
-              <a
+              <button
                 id="product-modal-order-btn"
-                href={primaryUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98"
+                type="button"
+                onClick={() => {
+                  if (onOrderNow) {
+                    onOrderNow(product, currentPlan);
+                    onClose();
+                  } else {
+                    window.open(primaryUrl, '_blank', 'noopener,noreferrer');
+                  }
+                }}
+                className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
               >
                 <SocialIcon icon={primaryPlatform?.icon} className="w-4 h-4 text-sky-400" />
                 <span>اطلب الآن عبر {primaryName}</span>
                 <ArrowUpLeft className="w-4 h-4" />
-              </a>
+              </button>
             ) : (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs text-amber-800 font-medium flex items-center justify-center gap-2">
                 <AlertCircle className="w-4 h-4" />

@@ -17,10 +17,8 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && (
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        request.auth.token.email == 'to.business04@gmail.com'
-      );
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
     // Products: Public can read, Admins can write

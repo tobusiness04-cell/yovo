@@ -87,8 +87,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <span className="text-slate-200 font-bold text-[11px] truncate max-w-[150px]">
               {currentUser?.email || 'Admin'}
             </span>
-            <span className="text-slate-400 text-[10px]">
-              {isFirebaseConfigured ? 'Firebase Production' : 'Local Preview'}
+            <span className="text-sky-400 text-[10px] font-semibold">
+              مسؤول معتمد ✓
             </span>
           </div>
 

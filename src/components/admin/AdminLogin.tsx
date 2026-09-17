@@ -60,13 +60,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
             </div>
           )}
 
-          {!isFirebaseConfigured && (
-            <div className="mb-6 p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs leading-relaxed">
-              <span className="font-bold block mb-1">💡 وضع المعاينة (Preview Mode):</span>
-              يمكنك الدخول مباشرة بأي بريد إلكتروني وكلمة مرور لتجربة لوحة التحكم، أو إضافة مفاتيح Firebase في ملف <code className="bg-slate-900 px-1 py-0.5 rounded text-sky-200">.env</code> للإنتاج.
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">

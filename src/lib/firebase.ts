@@ -1,4 +1,4 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
@@ -28,21 +28,14 @@ export interface FirestoreErrorInfo {
   };
 }
 
-const getEnvVar = (metaVal?: string, nodeKey?: string): string => {
-  if (metaVal && metaVal !== '' && !metaVal.startsWith('VITE_')) return metaVal;
-  if (typeof process !== 'undefined' && process.env && nodeKey && process.env[nodeKey]) {
-    return process.env[nodeKey] as string;
-  }
-  return metaVal || '';
-};
-
-const firebaseConfig = {
-  apiKey: getEnvVar(import.meta.env.VITE_FIREBASE_API_KEY, 'VITE_FIREBASE_API_KEY'),
-  authDomain: getEnvVar(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN, 'VITE_FIREBASE_AUTH_DOMAIN'),
-  projectId: getEnvVar(import.meta.env.VITE_FIREBASE_PROJECT_ID, 'VITE_FIREBASE_PROJECT_ID'),
-  storageBucket: getEnvVar(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET, 'VITE_FIREBASE_STORAGE_BUCKET'),
-  messagingSenderId: getEnvVar(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID, 'VITE_FIREBASE_MESSAGING_SENDER_ID'),
-  appId: getEnvVar(import.meta.env.VITE_FIREBASE_APP_ID, 'VITE_FIREBASE_APP_ID'),
+// 1. Primary and deterministic Firebase configuration directly from import.meta.env
+export const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
 export const isFirebaseConfigured: boolean = Boolean(
@@ -55,20 +48,25 @@ export const isFirebaseConfigured: boolean = Boolean(
 let appInstance: FirebaseApp | null = null;
 let authInstance: Auth | null = null;
 let dbInstance: Firestore | null = null;
+let initErrorInstance: Error | null = null;
 
 if (isFirebaseConfigured) {
   try {
-    appInstance = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
+    appInstance = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     authInstance = getAuth(appInstance);
     dbInstance = getFirestore(appInstance);
-  } catch (err) {
-    console.warn('Firebase initialization warning:', err);
+  } catch (err: any) {
+    console.error('Firebase initialization error:', err);
+    initErrorInstance = err instanceof Error ? err : new Error(String(err));
   }
+} else {
+  initErrorInstance = new Error('متغيرات بيئة Firebase (VITE_FIREBASE_API_KEY أو VITE_FIREBASE_PROJECT_ID) غير مكتملة.');
 }
 
 export const app = appInstance;
 export const auth = authInstance;
 export const db = dbInstance;
+export const firebaseInitError = initErrorInstance;
 
 export function handleFirestoreError(
   error: unknown,

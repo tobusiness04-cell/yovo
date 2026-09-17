@@ -6,7 +6,7 @@ import {
   User,
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db, isFirebaseConfigured } from '../lib/firebase';
+import { auth, db, isFirebaseConfigured, firebaseInitError } from '../lib/firebase';
 import { AdminUser } from '../types';
 
 interface AdminAuthContextType {
@@ -98,8 +98,20 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setIsLoading(true);
 
     try {
-      if (!auth || !db || !isFirebaseConfigured) {
-        throw new Error('خدمة Firebase غير مهيئة بشكل صحيح في البيئة الحالية.');
+      if (!auth) {
+        throw new Error(
+          firebaseInitError?.message
+            ? `فشل تهيئة خدمة المصادقة: ${firebaseInitError.message}`
+            : 'خدمة المصادقة Firebase غير متاحة في البيئة الحالية.'
+        );
+      }
+
+      if (!db) {
+        throw new Error(
+          firebaseInitError?.message
+            ? `فشل تهيئة قاعدة البيانات: ${firebaseInitError.message}`
+            : 'خدمة قاعدة بيانات Firestore غير متاحة في البيئة الحالية.'
+        );
       }
 
       // Step 1: Authenticate strictly via Firebase Authentication
@@ -142,6 +154,10 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         err.code === 'auth/invalid-credential'
       ) {
         message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+      } else if (err.code === 'auth/invalid-email') {
+        message = 'صيغة البريد الإلكتروني غير صالحة.';
+      } else if (err.code === 'auth/user-disabled') {
+        message = 'تم تعطيل هذا الحساب. يرجى مراجعة إدارة المتجر.';
       } else if (err.code === 'auth/too-many-requests') {
         message = 'تم حظر المحاولات مؤقتاً بسبب كثرة المحاولات الخاطئة. يرجى المحاولة لاحقاً.';
       } else if (err.code === 'auth/network-request-failed') {

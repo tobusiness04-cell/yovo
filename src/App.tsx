@@ -133,7 +133,7 @@ function MainStorefront() {
     const targetPlan =
       plan || (product.plans && product.plans.length > 0 ? product.plans[0] : undefined);
 
-    // 1. Generate dynamic order message based on product, plan & admin template
+    // 1. Generate complete order message based on product, plan & template
     const orderMessage = generateOrderMessage(
       settings.orderMessageTemplate,
       product,
@@ -141,29 +141,57 @@ function MainStorefront() {
       product.currency || settings.currency
     );
 
-    // Resolve primary order platform dynamically
+    // Resolve primary order platform dynamically (Instagram or configured primary)
     const primaryPlatform = getPrimaryOrderPlatform(settings);
     const orderUrl = primaryPlatform ? getOrderPlatformUrl(primaryPlatform.url) : '';
     const platformName = primaryPlatform?.name || 'Instagram';
     const platformIcon = primaryPlatform?.icon;
 
-    // 2. Open primary social platform in new browser tab
-    if (orderUrl) {
-      window.open(orderUrl, '_blank', 'noopener,noreferrer');
+    // 2. Copy the generated message to the user's clipboard FIRST
+    // Using Clipboard API directly within the user click gesture
+    let copied = false;
+    try {
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ) {
+        await navigator.clipboard.writeText(orderMessage);
+        copied = true;
+      } else {
+        copied = await copyTextToClipboard(orderMessage);
+      }
+    } catch (err) {
+      console.warn('Direct clipboard write failed, trying fallback copy:', err);
+      copied = await copyTextToClipboard(orderMessage);
     }
 
-    // 3. Automatically copy generated order message to customer's clipboard
-    const copiedSuccessfully = await copyTextToClipboard(orderMessage);
+    if (copied) {
+      // 3. Show brief success feedback: "تم نسخ رسالة الطلب ✓ سيتم فتح Instagram"
+      setOrderToastData({
+        productName: product.name,
+        orderMessage,
+        platformName,
+        platformUrl: orderUrl,
+        platformIcon: typeof platformIcon === 'string' ? platformIcon : undefined,
+        copiedSuccessfully: true,
+      });
 
-    // 4. Trigger the confirmation toast explaining to paste into DM
-    setOrderToastData({
-      productName: product.name,
-      orderMessage,
-      platformName,
-      platformUrl: orderUrl,
-      platformIcon: typeof platformIcon === 'string' ? platformIcon : undefined,
-      copiedSuccessfully,
-    });
+      // 4. Open the Instagram profile/order destination
+      if (orderUrl) {
+        window.open(orderUrl, '_blank', 'noopener,noreferrer');
+      }
+    } else {
+      // Graceful fallback: show manual copy modal with clear instructions
+      setOrderToastData({
+        productName: product.name,
+        orderMessage,
+        platformName,
+        platformUrl: orderUrl,
+        platformIcon: typeof platformIcon === 'string' ? platformIcon : undefined,
+        copiedSuccessfully: false,
+      });
+    }
   };
 
   // Render Admin View if on /admin

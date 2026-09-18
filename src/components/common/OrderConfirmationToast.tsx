@@ -23,13 +23,40 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
 }) => {
   const [justCopied, setJustCopied] = useState(false);
 
-  // Auto-dismiss after 12 seconds
+  // Auto-dismiss management
   useEffect(() => {
     if (!data) return;
-    const timer = setTimeout(() => {
-      onClose();
-    }, 12000);
-    return () => clearTimeout(timer);
+
+    // For successful copies: auto-dismiss after 2.5 seconds
+    // AND dismiss immediately when the user switches away and returns to the tab
+    if (data.copiedSuccessfully) {
+      const autoDismissTimer = setTimeout(() => {
+        onClose();
+      }, 2500);
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          onClose();
+        }
+      };
+
+      const handleWindowFocus = () => {
+        onClose();
+      };
+
+      // Slight delay before attaching tab focus listeners so the initial click doesn't trigger dismissal
+      const attachTimer = setTimeout(() => {
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleWindowFocus);
+      }, 400);
+
+      return () => {
+        clearTimeout(autoDismissTimer);
+        clearTimeout(attachTimer);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('focus', handleWindowFocus);
+      };
+    }
   }, [data, onClose]);
 
   if (!data) return null;
@@ -38,43 +65,75 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
     const success = await copyTextToClipboard(data.orderMessage);
     if (success) {
       setJustCopied(true);
-      setTimeout(() => setJustCopied(false), 2500);
+      setTimeout(() => setJustCopied(false), 2000);
     }
   };
 
+  const handleCopyAndOpen = async () => {
+    await copyTextToClipboard(data.orderMessage);
+    if (data.platformUrl) {
+      window.open(data.platformUrl, '_blank', 'noopener,noreferrer');
+    }
+    onClose();
+  };
+
+  // 1. Success State: Short confirmation notification (no lingering modal on return)
+  if (data.copiedSuccessfully) {
+    return (
+      <div
+        id="order-confirmation-toast"
+        className="fixed bottom-5 right-5 left-5 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 pointer-events-auto"
+        dir="rtl"
+      >
+        <div className="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-emerald-500/40 ring-1 ring-emerald-500/20">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Check className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>تم نسخ رسالة الطلب ✓ سيتم فتح {data.platformName}</span>
+                </h4>
+                <p className="text-[11px] text-slate-300 mt-0.5">
+                  ألصق الرسالة مباشرة في محادثة الخاص (DM).
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="إغلاق التنبيه"
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Failure State: Graceful manual copy modal (only shown if automatic copy genuinely failed)
   return (
     <div
-      id="order-confirmation-toast"
-      className="fixed bottom-5 right-5 left-5 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300 pointer-events-auto"
+      id="order-manual-copy-modal"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200 pointer-events-auto"
       dir="rtl"
     >
-      <div className="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-slate-700/80 ring-1 ring-white/10">
-        {/* Header row */}
+      <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-2xl border border-slate-700/80 ring-1 ring-white/10 w-full max-w-md">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                data.copiedSuccessfully
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-              }`}
-            >
-              {data.copiedSuccessfully ? (
-                <Check className="w-4 h-4" />
-              ) : (
-                <AlertCircle className="w-4 h-4" />
-              )}
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                <span>
-                  {data.copiedSuccessfully
-                    ? 'تم نسخ رسالة الطلب بنجاح ✓'
-                    : 'انسخ رسالة الطلب لإتمام الشراء'}
-                </span>
+              <h4 className="text-sm font-bold text-white">
+                يرجى نسخ رسالة الطلب يدوياً
               </h4>
-              <p className="text-[11px] text-slate-300 mt-0.5">
-                افتح <strong className="text-sky-400 font-semibold">{data.platformName}</strong> وألصق الرسالة في الخاص (DM).
+              <p className="text-xs text-slate-300 mt-0.5">
+                تعذر النسخ التلقائي في متصفحك. انسخ الرسالة أدناه ثم افتح {data.platformName}:
               </p>
             </div>
           </div>
@@ -82,53 +141,46 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
           <button
             type="button"
             onClick={onClose}
-            aria-label="إغلاق التنبيه"
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+            aria-label="إغلاق النافذة"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Message preview snippet */}
-        <div className="mt-3 p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-[11px] text-slate-300 leading-relaxed relative group font-mono selection:bg-sky-900">
-          <div className="line-clamp-2 pr-1">{data.orderMessage}</div>
+        <div className="mt-4 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200 font-mono whitespace-pre-wrap select-all leading-relaxed max-h-40 overflow-y-auto">
+          {data.orderMessage}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
           <button
             type="button"
             onClick={handleManualCopy}
-            className="mt-1.5 text-[10px] font-sans font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1 transition-colors"
+            className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             {justCopied ? (
               <>
-                <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400">تم النسخ إلى الحافظة!</span>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400">تم النسخ!</span>
               </>
             ) : (
               <>
-                <Copy className="w-3 h-3" />
-                <span>نسخ الرسالة مرة أخرى</span>
+                <Copy className="w-3.5 h-3.5" />
+                <span>نسخ الرسالة</span>
               </>
             )}
           </button>
-        </div>
 
-        {/* Action button: Direct link to open primary platform in case tab didn't open */}
-        {data.platformUrl && (
-          <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2">
-            <span className="text-[10px] text-slate-400">
-              لم يفتح التطبيق تلقائياً؟
-            </span>
-            <a
-              href={data.platformUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white text-[11px] font-bold inline-flex items-center gap-1.5 transition-all shadow-xs"
-            >
-              <SocialIcon icon={data.platformIcon} className="w-3 h-3" />
-              <span>افتح {data.platformName}</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={handleCopyAndOpen}
+            className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white text-xs font-bold inline-flex items-center gap-2 transition-all shadow-sm cursor-pointer"
+          >
+            <SocialIcon icon={data.platformIcon} className="w-3.5 h-3.5" />
+            <span>فتح {data.platformName}</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

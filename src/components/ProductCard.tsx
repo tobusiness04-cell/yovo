@@ -211,7 +211,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           id={`order-now-btn-${product.id}`}
           type="button"
           disabled={!isCurrentPlanAvailable}
-          onClick={() => onOrderNow(product, activePlan)}
+          onClick={() => {
+            if (typeof window.fbq === 'function') {
+              window.fbq('track', 'Contact');
+            }
+            onOrderNow(product, activePlan);
+          }}
           className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
             isCurrentPlanAvailable
               ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-2xs hover:shadow-xs active:scale-98'

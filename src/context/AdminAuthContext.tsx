@@ -5,9 +5,12 @@ import {
   onAuthStateChanged,
   User,
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured, firebaseInitError } from '../lib/firebase';
 import { AdminUser } from '../types';
+
+const PRIMARY_ADMIN_UID = 'YiiizflljtQElyHH0jICdy34drb2';
+const BOOTSTRAP_ADMIN_EMAIL = 'to.business04@gmail.com';
 
 interface AdminAuthContextType {
   currentUser: AdminUser | null;
@@ -44,15 +47,33 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setFirebaseUser(user);
 
       if (user) {
+
         try {
           if (!db) {
             throw new Error('Firestore database is not initialized.');
           }
 
-          // Authorization Check: Does admins/{currentUser.uid} document exist in Firestore?
+          // Strict Authorization Model: Firebase Auth + request.auth.uid + admins/{user.uid}
           const adminDocRef = doc(db, 'admins', user.uid);
-          const adminDocSnap = await getDoc(adminDocRef);
+          let adminDocSnap = await getDoc(adminDocRef);
 
+          // Bootstrap primary admin UID if document is missing or needs syncing
+          if (!adminDocSnap.exists() && (user.uid === PRIMARY_ADMIN_UID || user.email?.toLowerCase() === BOOTSTRAP_ADMIN_EMAIL.toLowerCase())) {
+            try {
+              await setDoc(adminDocRef, {
+                role: 'admin',
+                email: user.email || BOOTSTRAP_ADMIN_EMAIL,
+                displayName: user.displayName || user.email?.split('@')[0] || 'المدير العام',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              }, { merge: true });
+              adminDocSnap = await getDoc(adminDocRef);
+            } catch (autoErr) {
+              console.error('Auto-provisioning admin document notice:', autoErr);
+            }
+          }
+
+          // Strict validation: Only grant admin access if admins/{user.uid} actually exists in Firestore
           if (adminDocSnap.exists()) {
             const data = adminDocSnap.data();
             setCurrentUser({
@@ -64,18 +85,17 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             setIsAdmin(true);
             setAuthError(null);
           } else {
-            // User authenticated with Firebase, but has NO document in admins/{uid}
-            // Strict Authorization Failure: Deny access and sign out immediately
+            // Strict Authorization Failure: User authenticated, but has NO document in admins/{uid}
             setCurrentUser(null);
             setIsAdmin(false);
-            setAuthError('هذا الحساب غير مصرح له بالوصول إلى لوحة الإدارة.');
+            setAuthError('هذا الحساب غير مصرح له بالوصول إلى لوحة الإدارة. لا يوجد سجل مسؤول مرتبط.');
             await firebaseSignOut(auth);
           }
         } catch (error: any) {
           console.error('Error verifying admin authorization in Firestore:', error);
           setCurrentUser(null);
           setIsAdmin(false);
-          setAuthError('تعذر التحقق من صلاحيات المسؤول.');
+          setAuthError('تعذر التحقق من صلاحيات المسؤول في قاعدة البيانات.');
           await firebaseSignOut(auth);
         }
       } else {
@@ -122,14 +142,35 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         throw new Error('تعذر التحقق من هوية المستخدم.');
       }
 
-      // Step 2: Retrieve exact authenticated UID and check admins/{uid} document in Firestore
+      // Step 2: Ensure fresh token and check admins/{uid} document in Firestore
+      try {
+        await user.getIdToken(true);
+      } catch (tokenErr) {
+        console.warn('Could not force refresh token:', tokenErr);
+      }
+
       const adminDocRef = doc(db, 'admins', user.uid);
-      const adminDocSnap = await getDoc(adminDocRef);
+      let adminDocSnap = await getDoc(adminDocRef);
+
+      if (!adminDocSnap.exists() && (user.uid === PRIMARY_ADMIN_UID || user.email?.toLowerCase() === BOOTSTRAP_ADMIN_EMAIL.toLowerCase())) {
+        try {
+          await setDoc(adminDocRef, {
+            role: 'admin',
+            email: user.email || BOOTSTRAP_ADMIN_EMAIL,
+            displayName: user.displayName || user.email?.split('@')[0] || 'المدير العام',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+          adminDocSnap = await getDoc(adminDocRef);
+        } catch (autoErr) {
+          console.error('Auto-provisioning admin document on login:', autoErr);
+        }
+      }
 
       if (!adminDocSnap.exists()) {
         // Step 3: Deny access if UID does not exist in admins collection
         await firebaseSignOut(auth);
-        const deniedMessage = 'هذا الحساب ليس لديه صلاحيات الوصول إلى لوحة الإدارة.';
+        const deniedMessage = 'هذا الحساب ليس لديه صلاحيات الوصول إلى لوحة الإدارة. لا يوجد سجل مسؤول مرتبط.';
         setAuthError(deniedMessage);
         throw new Error(deniedMessage);
       }
@@ -140,7 +181,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         uid: user.uid,
         email: user.email,
         role: (data?.role as 'admin' | 'superadmin') || 'admin',
-        displayName: user.displayName || user.email?.split('@')[0] || 'مسؤول المتجر',
+        displayName: user.displayName || user.email?.split('@')[0] || 'المدير العام',
       });
       setIsAdmin(true);
       setAuthError(null);

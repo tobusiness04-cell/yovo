@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ProductCatalog } from './components/ProductCatalog';
@@ -11,6 +11,7 @@ import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
 import { ProductModal } from './components/ProductModal';
 import { ContactModal } from './components/ContactModal';
+import { PublicLandingPage } from './components/PublicLandingPage';
 import { AdminApp } from './components/admin/AdminApp';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { initialProducts } from './data/products';
@@ -20,18 +21,20 @@ import {
   getOrderPlatformUrl,
   generateOrderMessage,
 } from './config';
-import { Product, ProductPlan, Category, StoreConfig } from './types';
+import { Product, ProductPlan, Category, StoreConfig, LandingPage } from './types';
 import {
   subscribeProducts,
   subscribeCategories,
   subscribeStoreSettings,
+  subscribeToLandingPages,
+  createPendingOrder,
 } from './services/storeService';
 import { copyTextToClipboard } from './lib/clipboard';
 import {
   OrderConfirmationToast,
   OrderConfirmationData,
 } from './components/common/OrderConfirmationToast';
-import { Send } from 'lucide-react';
+import { Send, AlertCircle, X } from 'lucide-react';
 
 function MainStorefront() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,12 +42,18 @@ function MainStorefront() {
   const [productsError, setProductsError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [settings, setSettings] = useState<StoreConfig>(defaultStoreConfig);
+  const [landingPages, setLandingPages] = useState<LandingPage[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan | undefined>(undefined);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
   const [orderToastData, setOrderToastData] = useState<OrderConfirmationData | null>(null);
+  const [orderErrorMessage, setOrderErrorMessage] = useState<string | null>(null);
+
+  // Anti-duplicate click cache for pending orders
+  const lastOrderClickRef = useRef<{ [key: string]: number }>({});
 
   // Route state
+  const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname);
   const [isAdminView, setIsAdminView] = useState<boolean>(() => {
     return (
       window.location.pathname === '/admin' ||
@@ -56,6 +65,7 @@ function MainStorefront() {
   // Listen to browser navigation / history
   useEffect(() => {
     const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
       setIsAdminView(
         window.location.pathname === '/admin' ||
         window.location.hash === '#admin' ||
@@ -73,6 +83,7 @@ function MainStorefront() {
 
   const navigateToStore = () => {
     window.history.pushState({}, '', '/');
+    setCurrentPath('/');
     setIsAdminView(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -112,12 +123,29 @@ function MainStorefront() {
       }
     });
 
+    const unsubLandingPages = subscribeToLandingPages((lps) => {
+      setLandingPages(lps);
+    });
+
     return () => {
       unsubProducts();
       unsubCategories();
       unsubSettings();
+      unsubLandingPages();
     };
   }, []);
+
+  // Check if currentPath matches an active custom Landing Page (e.g. /canva-pro)
+  const matchedLandingPage = useMemo(() => {
+    const cleanSlug = currentPath.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (!cleanSlug || cleanSlug === 'admin') return null;
+    return landingPages.find((lp) => lp.active && lp.slug.toLowerCase() === cleanSlug) || null;
+  }, [currentPath, landingPages]);
+
+  const matchedLandingProduct = useMemo(() => {
+    if (!matchedLandingPage) return null;
+    return products.find((p) => p.id === matchedLandingPage.productId) || null;
+  }, [matchedLandingPage, products]);
 
   // When clicking details on product card
   const handleSelectProduct = (product: Product, plan?: ProductPlan) => {
@@ -129,11 +157,33 @@ function MainStorefront() {
   const handleOrderNow = async (product: Product, plan?: ProductPlan) => {
     if (!product.available) return;
 
+    // Trigger Meta Pixel Contact Event safely
+    if (typeof window.fbq === 'function') {
+      window.fbq('track', 'Contact');
+    }
+
     // Resolve target plan (passed plan or first plan)
     const targetPlan =
       plan || (product.plans && product.plans.length > 0 ? product.plans[0] : undefined);
 
-    // 1. Generate complete order message based on product, plan & template
+    setOrderErrorMessage(null);
+
+    // 1. Create a Pending Order in Firestore FIRST (Firestore is source of truth)
+    try {
+      await createPendingOrder({
+        product,
+        plan: targetPlan,
+      });
+    } catch (err: any) {
+      console.error('Real order creation failed in Firestore. Aborting order flow:', err);
+      setOrderErrorMessage(
+        'تعذر تسجيل الطلب في قاعدة البيانات حالياً. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرة.'
+      );
+      // DO NOT open Instagram or pretend order was successfully registered!
+      return;
+    }
+
+    // 2. Generate complete order message based on product, plan & template
     const orderMessage = generateOrderMessage(
       settings.orderMessageTemplate,
       product,
@@ -206,9 +256,23 @@ function MainStorefront() {
     );
   }
 
+  // Render dynamic Custom Landing Page if URL matches an active Landing Page
+  if (matchedLandingPage && matchedLandingProduct) {
+    return (
+      <PublicLandingPage
+        landingPage={matchedLandingPage}
+        product={matchedLandingProduct}
+        onCreatePendingOrder={async (data) => {
+          const ord = await createPendingOrder(data);
+          return ord.id;
+        }}
+        onBackToHome={navigateToStore}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-sky-100 selection:text-sky-900" dir="rtl">
-      
+    <div className="min-h-screen flex flex-col bg-white text-[#080B0F] selection:bg-[#FF3B30]/15 selection:text-[#FF3B30] font-sans" dir="rtl">
       {/* Sticky Navigation */}
       <Navbar
         settings={settings}
@@ -262,6 +326,24 @@ function MainStorefront() {
         onClose={() => setOrderToastData(null)}
       />
 
+      {/* Order Creation Failure Toast */}
+      {orderErrorMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] bg-[#080B0F]/95 border border-[#FF3B30]/60 text-white p-4 rounded-xl shadow-2xl backdrop-blur-md flex items-start gap-3 animate-in fade-in slide-in-from-bottom-5">
+          <AlertCircle className="w-5 h-5 text-[#FF3B30] shrink-0 mt-0.5" />
+          <div className="flex-1 text-xs leading-relaxed">
+            <span className="font-bold block mb-0.5 text-[#FF6B6B]">خطأ في تسجيل الطلب</span>
+            <span className="text-gray-200">{orderErrorMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOrderErrorMessage(null)}
+            className="text-gray-400 hover:text-white p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* General Contact Modal */}
       <ContactModal
         isOpen={isContactOpen}
@@ -276,15 +358,14 @@ function MainStorefront() {
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
-            className="flex items-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg text-xs font-bold active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-3 bg-[#080B0F] hover:bg-black text-white rounded-full shadow-lg border border-gray-800 text-xs font-bold active:scale-95 transition-all"
             aria-label="تواصل معنا فوراً"
           >
-            <Send className="w-4 h-4 text-sky-400" />
+            <Send className="w-4 h-4 text-[#FF3B30]" />
             <span>تواصل معنا</span>
           </button>
         </div>
       </div>
-
     </div>
   );
 }

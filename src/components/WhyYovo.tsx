@@ -6,89 +6,90 @@ export const WhyYovo: React.FC = () => {
   const benefits = [
     {
       id: 'benefit-pricing',
-      title: 'أسعار واضحة',
-      desc: 'شفافية كاملة في الأسعار والمدد بالدينار الجزائري (دج) بدون أي تكاليف مخفية أو مفاجآت.',
+      title: 'أسعار واضحة بالدينار',
+      desc: 'شفافية كاملة في الأسعار والمدد بالدينار الجزائري بدون أي تكاليف خفية أو مفاجآت بعد الطلب.',
       icon: Tag,
       badge: 'شفافية تامة',
-      accentColor: 'text-amber-600 bg-amber-50 border-amber-100',
+      accentColor: 'text-[#080B0F] bg-[#F3F4F6] border-[#E5E7EB]',
     },
     {
       id: 'benefit-speed',
-      title: 'تفعيل سريع',
-      desc: 'تفعيل فوري أو خلال دقائق معدودة بعد تأكيد طلبك مع إرشادات مبسطة للبدء مباشرة.',
+      title: 'تفعيل سريع وفوري',
+      desc: 'تفعيل خلال دقائق معدودة بعد تأكيد طلبك مع إرشادات مبسطة للبدء في استخدام اشتراكك فوراً.',
       icon: Zap,
       badge: '15 - 30 دقيقة',
-      accentColor: 'text-sky-600 bg-sky-50 border-sky-100',
+      accentColor: 'text-[#FF3B30] bg-[#FF3B30]/10 border-[#FF3B30]/20',
     },
     {
       id: 'benefit-support',
-      title: 'دعم العملاء',
-      desc: 'فريق دعم متواجد للإجابة على استفساراتك عبر Instagram ومساعدتك خطوة بخطوة.',
+      title: 'دعم مباشر عبر Instagram',
+      desc: 'فريق دعم متواجد للإجابة على استفساراتك ومساعدتك خطوة بخطوة في أي وقت.',
       icon: Headphones,
-      badge: 'متابعة مستمرة',
-      accentColor: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+      badge: 'متابعة مباشرة',
+      accentColor: 'text-[#080B0F] bg-[#F3F4F6] border-[#E5E7EB]',
     },
     {
       id: 'benefit-guarantee',
-      title: 'ضمان حسب المنتج',
-      desc: 'شروط ومدة الضمان واضحة ومحددة لكل خدمة على حدة قبل الطلب، باش تخدم وأنت مطمئن وبكل راحة.',
+      title: 'ضمان محدد لكل اشتراك',
+      desc: 'شروط ومدة الضمان واضحة ومحددة لكل أداة على حدة قبل الطلب، لتخدم وأنت مطمئن ومرتاح البال.',
       icon: ShieldCheck,
-      badge: 'موضح لكل خدمة',
-      accentColor: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+      badge: 'ضمان معلن',
+      accentColor: 'text-[#FF3B30] bg-[#FF3B30]/10 border-[#FF3B30]/20',
     },
   ];
 
   return (
-    <section id="why" className="py-16 sm:py-24 bg-slate-50">
+    <section id="why" className="py-14 sm:py-20 bg-[#F3F4F6]/50 border-b border-[#E5E7EB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block">
-            مميزات التعامل معنا
-          </span>
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#080B0F] text-xs font-bold mb-3 border border-[#E5E7EB] shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#FF3B30]"></span>
+            <span>مميزات التسوق مع Yovo</span>
+          </div>
           <h2
             id="why-yovo-title"
-            className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight"
+            className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#080B0F] tracking-tight"
           >
-            علاش تختار Yovo؟
+            علاش تختار متجر Yovo لاشتراكاتك؟
           </h2>
-          <p className="text-base text-slate-600 mt-3 font-normal leading-relaxed">
-            نهتم بتوفير تجربة سهلة، سريعة وموثوقة لجميع مستخدمي الاشتراكات الرقمية في الجزائر.
+          <p className="text-sm text-[#6B7280] mt-2 font-normal leading-relaxed">
+            نهتم بتوفير تجربة تسوق سهلة، سريعة وموثوقة لجميع المبدعين والطلبة وصانعي المحتوى في الجزائر.
           </p>
         </div>
 
         {/* 4 Core Benefits Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {benefits.map((b) => {
             const Icon = b.icon;
             return (
               <div
                 key={b.id}
                 id={`benefit-card-${b.id}`}
-                className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+                className="bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-xs hover:border-[#080B0F] hover:shadow-lg transition-all flex flex-col justify-between yovo-card-hover"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${b.accentColor}`}>
-                      <Icon className="w-6 h-6" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center border shadow-xs ${b.accentColor}`}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                    <span className="text-[11px] font-bold text-[#6B7280] bg-[#F3F4F6] border border-[#E5E7EB] px-2.5 py-1 rounded-lg">
                       {b.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">
+                  <h3 className="text-base font-bold text-[#080B0F] mb-1.5">
                     {b.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  <p className="text-xs text-[#6B7280] leading-relaxed font-normal">
                     {b.desc}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-500" />
+                <div className="mt-5 pt-3.5 border-t border-[#E5E7EB] flex items-center gap-1.5 text-[11px] text-[#080B0F] font-semibold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#FF3B30]" />
                   <span>خدمة موثوقة ومضمونة</span>
                 </div>
               </div>
@@ -96,11 +97,13 @@ export const WhyYovo: React.FC = () => {
           })}
         </div>
 
-        {/* Transparent Guarantee Callout (per user directive) */}
-        <div className="mt-10 p-5 rounded-2xl bg-white border border-slate-200/90 max-w-3xl mx-auto flex items-start gap-3.5 text-right">
-          <ShieldCheck className="w-5 h-5 text-slate-700 shrink-0 mt-0.5" />
-          <div className="text-xs text-slate-600 leading-relaxed">
-            <span className="font-bold text-slate-900 block mb-0.5">تنويه شفاف حول الضمان:</span>
+        {/* Transparent Guarantee Callout */}
+        <div className="mt-8 p-4 rounded-xl bg-white border border-[#E5E7EB] max-w-3xl mx-auto flex items-start gap-3 text-right shadow-xs">
+          <div className="w-8 h-8 rounded-lg bg-[#080B0F] text-white flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck className="w-4 h-4 text-[#FF3B30]" />
+          </div>
+          <div className="text-xs text-[#6B7280] leading-relaxed">
+            <span className="font-bold text-[#080B0F] block mb-0.5">تنويه شفاف حول الضمان:</span>
             {storeConfig.guaranteeGeneralText} لا نقدّم وعوداً عامة غير واقعية، بل نلتزم بشروط محددة ومعلنة لكل اشتراك في بطاقة تفاصيله.
           </div>
         </div>
@@ -109,3 +112,4 @@ export const WhyYovo: React.FC = () => {
     </section>
   );
 };
+

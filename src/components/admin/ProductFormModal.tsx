@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product, ProductPlan, Category } from '../../types';
-import { X, Plus, Trash2, Check, AlertCircle, Image, Sparkles } from 'lucide-react';
+import { X, Plus, Trash2, Check, AlertCircle, Image as ImageIcon, Sparkles, Upload, RefreshCw, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
+import { compressAndOptimizeImage, formatFileSize } from '../../lib/imageUtils';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -27,6 +28,46 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [category, setCategory] = useState(productToEdit?.category || (categories[0]?.name || 'تصميم'));
   const [description, setDescription] = useState(productToEdit?.description || '');
   const [imageUrl, setImageUrl] = useState(productToEdit?.imageUrl || productToEdit?.image || '');
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [imageUploadInfo, setImageUploadInfo] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const processImageFile = async (file: File) => {
+    try {
+      setIsProcessingImage(true);
+      setFormError(null);
+      const result = await compressAndOptimizeImage(file, {
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.85,
+      });
+      setImageUrl(result.dataUrl);
+      setImageUploadInfo(`تم تجهيز الصورة بنجاح (${formatFileSize(result.sizeBytes)} • ${result.width}×${result.height}px)`);
+    } catch (err: any) {
+      setFormError(err.message || 'فشل تحميل الصورة من الجهاز.');
+    } finally {
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+  };
   const [price, setPrice] = useState<number | string>(productToEdit?.price ?? 600);
   const [currency, setCurrency] = useState(productToEdit?.currency || 'دج');
   const [duration, setDuration] = useState(productToEdit?.duration || 'شهري');
@@ -42,16 +83,22 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [guarantee, setGuarantee] = useState(productToEdit?.guarantee || 'ضمان استقرار كامل المدة');
   const [activationTime, setActivationTime] = useState(productToEdit?.activationTime || 'خلال 15 - 30 دقيقة');
   const [orderCtaText, setOrderCtaText] = useState(productToEdit?.orderCtaText || 'اطلب الآن');
+  
+  // Cost & Profit Margins
+  const [purchaseCost, setPurchaseCost] = useState<number>(productToEdit?.purchaseCost ?? 0);
+  const [adCost, setAdCost] = useState<number>(productToEdit?.adCost ?? 0);
+  const [otherCosts, setOtherCosts] = useState<number>(productToEdit?.otherCosts ?? 0);
+  const [targetMargin, setTargetMargin] = useState<number>(productToEdit?.targetMargin ?? 40);
 
   // Plans state
   const [plans, setPlans] = useState<ProductPlan[]>(
     productToEdit?.plans && productToEdit.plans.length > 0
       ? productToEdit.plans
       : [
-          { id: 'p1', duration: 'شهري', price: 600, available: true, popular: false },
-          { id: 'p2', duration: '3 أشهر', price: 1600, available: true, popular: false },
-          { id: 'p3', duration: '6 أشهر', price: 2900, available: true, popular: true, note: 'الأكثر طلباً' },
-          { id: 'p4', duration: 'عام', price: 4900, available: true, popular: false, note: 'توفير أكبر' },
+          { id: 'p1', duration: 'شهري', price: 600, available: true, popular: false, purchaseCost: 200 },
+          { id: 'p2', duration: '3 أشهر', price: 1600, available: true, popular: false, purchaseCost: 500 },
+          { id: 'p3', duration: '6 أشهر', price: 2900, available: true, popular: true, note: 'الأكثر طلباً', purchaseCost: 900 },
+          { id: 'p4', duration: 'عام', price: 4900, available: true, popular: false, note: 'توفير أكبر', purchaseCost: 1500 },
         ]
   );
 
@@ -141,7 +188,17 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       guarantee: guarantee.trim(),
       activationTime: activationTime.trim(),
       orderCtaText: orderCtaText.trim() || 'اطلب الآن',
-      plans,
+      purchaseCost: Number(purchaseCost) || 0,
+      adCost: Number(adCost) || 0,
+      otherCosts: Number(otherCosts) || 0,
+      targetMargin: Number(targetMargin) || 40,
+      plans: plans.map((p) => ({
+        ...p,
+        price: Number(p.price) || 0,
+        purchaseCost: p.purchaseCost !== undefined ? Number(p.purchaseCost) : undefined,
+        adCost: p.adCost !== undefined ? Number(p.adCost) : undefined,
+        otherCost: p.otherCost !== undefined ? Number(p.otherCost) : undefined,
+      })),
     };
 
     try {
@@ -276,22 +333,38 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </div>
           </div>
 
-          {/* Image URL & Preview */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Image className="w-4 h-4 text-slate-500" />
-              <span>رابط صورة أو شعار الخدمة (Image URL)</span>
-            </label>
-            <div className="flex gap-3 items-center">
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/... أو رابط شعار الخدمة"
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-xs focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 focus:outline-hidden dir-ltr text-left"
-              />
-              <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                {imageUrl ? (
+          {/* Product Image Section (Upload from Device or URL) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            {/* Hidden native file input for mobile and desktop */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-sky-600" />
+                <span>صورة أو شعار المنتج</span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setShowUrlInput(!showUrlInput)}
+                className="text-[11px] font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1 transition-colors"
+              >
+                <LinkIcon className="w-3 h-3" />
+                <span>{showUrlInput ? 'إخفاء الرابط المباشر' : 'أو استخدام رابط مباشر (URL)'}</span>
+              </button>
+            </div>
+
+            {/* Active Image Preview Container (if image already exists or uploaded) */}
+            {imageUrl ? (
+              <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
+                {/* Thumbnail Preview */}
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden relative shrink-0 flex items-center justify-center shadow-xs">
                   <img
                     src={imageUrl}
                     alt="Preview"
@@ -301,13 +374,119 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80';
                     }}
                   />
+                  {isProcessingImage && (
+                    <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white">
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Details & Actions */}
+                <div className="flex-1 text-center sm:text-right w-full">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200 mb-1.5">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>{imageUrl.startsWith('data:') ? 'صورة مرفوعة من جهازك' : 'صورة مرتبطة'}</span>
+                  </div>
+
+                  {imageUploadInfo && (
+                    <p className="text-xs text-slate-500 mb-2 font-mono">
+                      {imageUploadInfo}
+                    </p>
+                  )}
+
+                  <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                    ستظهر هذه الصورة في واجهة المتجر وبطاقة تفاصيل المنتج لدى الزبائن.
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <button
+                      type="button"
+                      disabled={isProcessingImage}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-slate-600" />
+                      <span>تغيير الصورة من جهازي</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageUrl('');
+                        setImageUploadInfo(null);
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>حذف الصورة</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Drag & Drop / Click to Upload Box (When no image is set) */
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(true);
+                }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
+                  isDragOver
+                    ? 'border-sky-500 bg-sky-50/80 scale-[1.01]'
+                    : 'border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50/50'
+                }`}
+              >
+                {isProcessingImage ? (
+                  <div className="flex flex-col items-center justify-center py-2">
+                    <RefreshCw className="w-8 h-8 text-sky-600 animate-spin mb-2" />
+                    <span className="text-xs font-bold text-slate-800">جاري ضغط ومعالجة الصورة من جهازك...</span>
+                  </div>
                 ) : (
-                  <Image className="w-5 h-5 text-slate-300" />
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-3 shadow-2xs">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-900 mb-1">
+                      اضغط لاختيار صورة من جهازك أو اسحبها إلى هنا
+                    </span>
+                    <p className="text-xs text-slate-500 max-w-sm leading-relaxed mb-3">
+                      يدعم صور PNG, JPG, JPEG, WEBP, SVG من الهاتف أو الحاسوب. يتم ضغط الصورة تلقائياً لسرعة التصفح.
+                    </p>
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-all shadow-xs">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>اختيار ملف من الجهاز</span>
+                    </span>
+                  </div>
                 )}
               </div>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              إذا تركت الحقل فارغاً سيتم استخدام أيقونة افتراضية عصرية خاصة بـ Yovo.
+            )}
+
+            {/* Optional URL Input if toggled */}
+            {showUrlInput && (
+              <div className="mt-3 pt-3 border-t border-slate-200">
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  أو الصق رابط صورة مباشر (URL):
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={imageUrl.startsWith('data:') ? '' : imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      setImageUploadInfo(null);
+                    }}
+                    placeholder="https://example.com/logo.png"
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-slate-900 text-xs focus:border-sky-500 focus:outline-hidden dir-ltr text-left bg-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-400 mt-2 text-right">
+              ملاحظة: إذا لم تقم برفع صورة، سيعرض المتجر تلقائياً الأيقونة والشعار الرقمي الرسمي للخدمة.
             </p>
           </div>
 
@@ -352,15 +531,89 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </div>
           </div>
 
+          {/* Default Product Cost & Profit Margin */}
+          <div className="border border-emerald-200/80 bg-emerald-50/40 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  <span>التكاليف الافتراضية وهامش الربح المستهدف</span>
+                </h4>
+                <p className="text-[11px] text-emerald-700/80">
+                  تُستخدم لحساب صافي الأرباح تلقائياً عند إنشاء الطلبات وتحديد الأسعار الموصى بها
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  تكلفة الشراء الافتراضية (دج)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={purchaseCost}
+                  onChange={(e) => setPurchaseCost(Number(e.target.value))}
+                  placeholder="مثلاً: 250"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-900 text-xs bg-white focus:border-emerald-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  تكلفة الإعلان التقديرية (دج)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={adCost}
+                  onChange={(e) => setAdCost(Number(e.target.value))}
+                  placeholder="مثلاً: 100"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-900 text-xs bg-white focus:border-emerald-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  تكاليف أخرى تقديرية (دج)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={otherCosts}
+                  onChange={(e) => setOtherCosts(Number(e.target.value))}
+                  placeholder="مثلاً: 20"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-900 text-xs bg-white focus:border-emerald-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  هامش الربح المستهدف (%)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={targetMargin}
+                  onChange={(e) => setTargetMargin(Number(e.target.value))}
+                  placeholder="مثلاً: 40"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-900 text-xs bg-white focus:border-emerald-500 focus:outline-hidden"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Multiple Plans Manager */}
           <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h4 className="text-xs font-bold text-slate-900">
-                  خطط ومدد الاشتراك المتعددة (Plans)
+                  خطط ومدد الاشتراك والتكاليف المخصصة (Plans & Costs)
                 </h4>
                 <p className="text-[11px] text-slate-500">
-                  يمكن للزبون التبديل بين هذه المدد ورؤية السعر يتغير ديناميكياً
+                  حدد سعر البيع وتكلفة الشراء لكل مدة لحساب الربحية على مستوى كل خطة
                 </p>
               </div>
               <button
@@ -373,66 +626,137 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </button>
             </div>
 
-            <div className="space-y-2.5">
-              {plans.map((plan, idx) => (
-                <div
-                  key={plan.id || idx}
-                  className="bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap sm:flex-nowrap items-center gap-2.5 text-xs shadow-xs"
-                >
-                  <div className="w-full sm:w-1/4">
-                    <label className="text-[10px] text-slate-400 block mb-0.5">المدة</label>
-                    <input
-                      type="text"
-                      value={plan.duration}
-                      onChange={(e) => handleUpdatePlan(idx, 'duration', e.target.value)}
-                      placeholder="شهري / عام"
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-900 text-xs font-medium"
-                    />
-                  </div>
+            <div className="space-y-3">
+              {plans.map((plan, idx) => {
+                const planPrice = Number(plan.price) || 0;
+                const pCost = plan.purchaseCost !== undefined ? Number(plan.purchaseCost) : purchaseCost;
+                const aCost = plan.adCost !== undefined ? Number(plan.adCost) : adCost;
+                const oCost = plan.otherCost !== undefined ? Number(plan.otherCost) : otherCosts;
+                const planTotalCost = pCost + aCost + oCost;
+                const planProfit = planPrice - planTotalCost;
+                const planMargin = planPrice > 0 ? ((planProfit / planPrice) * 100).toFixed(0) : '0';
 
-                  <div className="w-1/2 sm:w-1/4">
-                    <label className="text-[10px] text-slate-400 block mb-0.5">السعر (دج)</label>
-                    <input
-                      type="number"
-                      value={plan.price}
-                      onChange={(e) => handleUpdatePlan(idx, 'price', Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-900 text-xs font-bold"
-                    />
-                  </div>
+                return (
+                  <div
+                    key={plan.id || idx}
+                    className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2.5 shadow-xs"
+                  >
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 text-xs">
+                      <div className="w-full sm:w-1/4">
+                        <label className="text-[10px] text-slate-400 block mb-0.5">المدة</label>
+                        <input
+                          type="text"
+                          value={plan.duration}
+                          onChange={(e) => handleUpdatePlan(idx, 'duration', e.target.value)}
+                          placeholder="شهري / عام"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-900 text-xs font-medium"
+                        />
+                      </div>
 
-                  <div className="w-1/2 sm:w-1/4">
-                    <label className="text-[10px] text-slate-400 block mb-0.5">شارة تمييزية (اختياري)</label>
-                    <input
-                      type="text"
-                      value={plan.note || ''}
-                      onChange={(e) => handleUpdatePlan(idx, 'note', e.target.value)}
-                      placeholder="الأكثر طلباً / توفير"
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 text-xs"
-                    />
-                  </div>
+                      <div className="w-1/2 sm:w-1/4">
+                        <label className="text-[10px] text-slate-400 block mb-0.5">سعر البيع (دج)</label>
+                        <input
+                          type="number"
+                          value={plan.price}
+                          onChange={(e) => handleUpdatePlan(idx, 'price', Number(e.target.value))}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-900 text-xs font-bold"
+                        />
+                      </div>
 
-                  <div className="flex items-center gap-2 mt-2 sm:mt-4">
-                    <label className="flex items-center gap-1 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={plan.available !== false}
-                        onChange={(e) => handleUpdatePlan(idx, 'available', e.target.checked)}
-                        className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                      />
-                      <span className="text-[11px] text-slate-600">متوفر</span>
-                    </label>
+                      <div className="w-1/2 sm:w-1/4">
+                        <label className="text-[10px] text-slate-400 block mb-0.5">شارة تمييزية (اختياري)</label>
+                        <input
+                          type="text"
+                          value={plan.note || ''}
+                          onChange={(e) => handleUpdatePlan(idx, 'note', e.target.value)}
+                          placeholder="الأكثر طلباً / توفير"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 text-xs"
+                        />
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePlan(idx)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                      title="حذف الخطة"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      <div className="flex items-center gap-2 mt-2 sm:mt-4">
+                        <label className="flex items-center gap-1 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={plan.available !== false}
+                            onChange={(e) => handleUpdatePlan(idx, 'available', e.target.checked)}
+                            className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                          />
+                          <span className="text-[11px] text-slate-600">متوفر</span>
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePlan(idx)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="حذف الخطة"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plan-level Costs & Margin Preview */}
+                    <div className="bg-slate-50/80 p-2.5 rounded-lg border border-slate-200/70 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-slate-500">تكلفة الشراء:</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={plan.purchaseCost ?? ''}
+                            onChange={(e) =>
+                              handleUpdatePlan(
+                                idx,
+                                'purchaseCost',
+                                e.target.value === '' ? undefined : Number(e.target.value)
+                              )
+                            }
+                            placeholder={String(purchaseCost)}
+                            className="w-20 px-2 py-0.5 text-[11px] rounded border border-slate-200 bg-white"
+                          />
+                          <span className="text-[10px] text-slate-400">دج</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-slate-500">تكلفة الإعلان:</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={plan.adCost ?? ''}
+                            onChange={(e) =>
+                              handleUpdatePlan(
+                                idx,
+                                'adCost',
+                                e.target.value === '' ? undefined : Number(e.target.value)
+                              )
+                            }
+                            placeholder={String(adCost)}
+                            className="w-20 px-2 py-0.5 text-[11px] rounded border border-slate-200 bg-white"
+                          />
+                          <span className="text-[10px] text-slate-400">دج</span>
+                        </div>
+                      </div>
+
+                      {/* Profitability Calculation Badge */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500">
+                          التكلفة الإجمالية: <strong className="text-slate-800">{planTotalCost.toLocaleString()} دج</strong>
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                            planProfit >= 0
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : 'bg-rose-100 text-rose-800 border border-rose-200'
+                          }`}
+                        >
+                          ربح: {planProfit.toLocaleString()} دج ({planMargin}%)
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, ShieldCheck, Clock, ArrowUpLeft, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Check, ShieldCheck, Clock, ArrowUpLeft, Sparkles, AlertCircle, ShoppingBag } from 'lucide-react';
 import { Product, ProductPlan, StoreConfig } from '../types';
 import { storeConfig, getPrimaryOrderPlatform, getEnabledSocialPlatforms, getOrderPlatformUrl } from '../config';
 import { formatPrice } from '../lib/formatters';
-import { SocialIcon } from './common/SocialIcon';
+import { BrandArtwork } from './common/BrandArtwork';
 
 interface ProductModalProps {
   product: Product | null;
@@ -41,33 +41,23 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     ? (product.plans.find((p) => p.id === selectedPlanId) || product.plans[0])
     : {
         id: 'base',
-        duration: product.duration,
+        duration: product.duration || 'شهري',
         price: product.price,
         available: product.available,
       };
 
   const isAvailable = product.available && currentPlan.available !== false;
   const currentPrice = typeof currentPlan.price === 'number' ? currentPlan.price : product.price;
-  const currentDuration = currentPlan.duration || product.duration;
-
-  // Resolve dynamic primary order platform
-  const primaryPlatform = getPrimaryOrderPlatform(currentSettings);
-  const primaryUrl = primaryPlatform?.url ? getOrderPlatformUrl(primaryPlatform.url) : '';
-  const primaryName = primaryPlatform?.name || 'Instagram';
-
-  // Other enabled platforms for secondary inquiries
-  const otherPlatforms = getEnabledSocialPlatforms(currentSettings).filter(
-    (p) => p.id !== primaryPlatform?.id
-  );
+  const currentDuration = currentPlan.duration || product.duration || 'شهري';
 
   return (
     <div
       id="product-details-modal"
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#080B0F]/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in"
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 text-right overflow-hidden transition-all scale-100"
+        className="relative bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-[#E5E7EB] text-right transition-all animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -75,171 +65,187 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           id="close-modal-btn"
           type="button"
           onClick={onClose}
-          className="absolute top-5 left-5 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
+          className="absolute top-4 left-4 z-30 p-2 text-white bg-black/50 hover:bg-black/80 rounded-full transition-colors cursor-pointer backdrop-blur-xs"
           aria-label="إغلاق"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        {/* Modal Header */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">
-            {product.category}
-          </span>
-          {product.popular && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100">
-              <Sparkles className="w-3 h-3 text-sky-500" />
-              الأكثر طلباً
+        {/* Modal Artwork Banner Header */}
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#F3F4F6]">
+          <BrandArtwork product={product} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+          {/* Badges on Banner */}
+          <div className="absolute bottom-3 right-4 left-4 flex items-center justify-between text-white z-20">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-white/90 text-[#080B0F] backdrop-blur-xs">
+              {product.category}
             </span>
-          )}
-        </div>
-
-        <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">
-          {product.name}
-        </h3>
-
-        <p className="text-sm text-slate-600 leading-relaxed mb-6 font-normal">
-          {product.description}
-        </p>
-
-        {/* Plan Selector */}
-        {product.plans && product.plans.length > 0 && (
-          <div className="mb-6">
-            <label className="text-xs font-bold text-slate-800 block mb-2">
-              اختر المدة المناسبة:
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {product.plans.map((plan) => {
-                const isSelected = plan.id === currentPlan.id;
-                const isPlanDisabled = !product.available || plan.available === false;
-                return (
-                  <button
-                    key={plan.id}
-                    type="button"
-                    disabled={isPlanDisabled}
-                    onClick={() => setSelectedPlanId(plan.id)}
-                    className={`py-2 px-3 text-center rounded-xl text-xs font-bold transition-all border ${
-                      isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : isPlanDisabled
-                        ? 'bg-slate-50 text-slate-400 border-slate-100 line-through cursor-not-allowed'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div>{plan.duration}</div>
-                    <div className={`text-[11px] font-normal mt-0.5 ${isSelected ? 'text-sky-300' : 'text-slate-500'}`}>
-                      {formatPrice(plan.price, product.currency)}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Price & Delivery Card */}
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-6 flex items-center justify-between">
-          <div>
-            <span className="text-xs text-slate-500 block font-medium">السعر المحدد:</span>
-            <span className="text-2xl font-extrabold text-slate-900 font-brand">
-              {formatPrice(currentPrice, product.currency)}
-            </span>
-            <span className="text-xs text-slate-500 mr-1.5">/ {currentDuration}</span>
-          </div>
-
-          <div className="text-left">
-            <span className="inline-flex items-center gap-1 text-xs text-slate-600 font-medium">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              {product.activationTime || 'تفعيل سريع'}
-            </span>
-            <span className="block text-[11px] text-emerald-600 font-bold mt-0.5">
-              {isAvailable ? 'جاهز للتفعيل' : 'غير متوفر حالياً'}
-            </span>
+            {product.popular && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FF3B30] text-white text-xs font-bold shadow-xs">
+                <Sparkles className="w-3.5 h-3.5" />
+                الأكثر طلباً
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Features Checklist */}
-        <div className="mb-6">
-          <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
-            المميزات المضمنة في الاشتراك:
-          </h4>
-          <div className="space-y-2.5">
-            {product.features.map((feature, idx) => (
-              <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 leading-normal">
-                <div className="w-4 h-4 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <Check className="w-3 h-3" />
-                </div>
-                <span>{feature}</span>
+        {/* Modal Content */}
+        <div className="p-5 sm:p-6 text-right">
+          <h3 className="text-xl sm:text-2xl font-black text-[#080B0F] tracking-tight mb-1">
+            {product.name}
+          </h3>
+
+          <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed mb-4 font-normal">
+            {product.description}
+          </p>
+
+          {/* Plan Selector Buttons (If multiple plans exist) */}
+          {product.plans && product.plans.length > 0 && (
+            <div className="mb-5">
+              <label className="text-xs font-bold text-[#080B0F] block mb-2">
+                اختر خطة الاشتراك المناسبة:
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {product.plans.map((plan) => {
+                  const isSelected = plan.id === currentPlan.id;
+                  const isPlanDisabled = !product.available || plan.available === false;
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      disabled={isPlanDisabled}
+                      onClick={() => setSelectedPlanId(plan.id)}
+                      className={`p-2.5 rounded-xl text-center transition-all cursor-pointer border ${
+                        isSelected
+                          ? 'border-[#080B0F] bg-[#080B0F] text-white shadow-xs'
+                          : isPlanDisabled
+                          ? 'border-[#E5E7EB] bg-[#F3F4F6] text-gray-400 line-through cursor-not-allowed opacity-60'
+                          : 'border-[#E5E7EB] bg-[#F3F4F6] text-[#080B0F] hover:bg-gray-200'
+                      }`}
+                    >
+                      <span className="block text-xs font-bold">{plan.duration}</span>
+                      <span
+                        className={`block text-[11px] mt-0.5 font-brand ${
+                          isSelected ? 'text-gray-200' : 'text-[#6B7280]'
+                        }`}
+                      >
+                        {formatPrice(plan.price, product.currency || 'دج')}
+                      </span>
+                      {plan.note && (
+                        <span
+                          className={`inline-block text-[9px] px-1 py-0.2 mt-1 rounded-sm ${
+                            isSelected
+                              ? 'bg-[#FF3B30] text-white font-bold'
+                              : 'bg-[#FF3B30]/15 text-[#FF3B30] font-semibold'
+                          }`}
+                        >
+                          {plan.note}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
 
-        {/* Product Specific Guarantee Info */}
-        <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100 text-emerald-900 text-xs flex items-start gap-2 mb-6">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold block">معلومات الضمان الخاصة بهذا الاشتراك:</span>
-            <span className="text-emerald-800 leading-relaxed">
-              {product.guarantee || currentSettings.guaranteeGeneralText}
-            </span>
-          </div>
-        </div>
+          {/* Price Box */}
+          <div className="p-4 rounded-2xl bg-[#F3F4F6] border border-[#E5E7EB] mb-5 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-[#6B7280] block font-medium">السعر المطلوب:</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl font-black text-[#080B0F] font-brand tracking-tight">
+                  {formatPrice(currentPrice, product.currency || 'دج')}
+                </span>
+                <span className="text-xs text-[#6B7280] font-bold">
+                  / {currentDuration}
+                </span>
+              </div>
+            </div>
 
-        {/* Dynamic Conversion Action Buttons */}
-        {isAvailable ? (
-          <div className="space-y-3">
-            {primaryUrl ? (
-              <button
-                id="product-modal-order-btn"
-                type="button"
-                onClick={() => {
-                  if (onOrderNow) {
-                    onOrderNow(product, currentPlan);
-                    onClose();
-                  } else {
-                    window.open(primaryUrl, '_blank', 'noopener,noreferrer');
-                  }
-                }}
-                className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
-              >
-                <SocialIcon icon={primaryPlatform?.icon} className="w-4 h-4 text-sky-400" />
-                <span>اطلب الآن عبر {primaryName}</span>
-                <ArrowUpLeft className="w-4 h-4" />
-              </button>
-            ) : (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs text-amber-800 font-medium flex items-center justify-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                <span>قناة استقبال الطلبات غير مهيئة حالياً في لوحة الإدارة.</span>
+            {product.activationTime && (
+              <div className="text-left">
+                <span className="text-[10px] text-[#6B7280] block font-medium">سرعة التفعيل</span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-[#080B0F] mt-0.5">
+                  <Clock className="w-3.5 h-3.5 text-[#FF3B30]" />
+                  {product.activationTime}
+                </span>
               </div>
             )}
+          </div>
 
-            {/* Other enabled channels (if configured) */}
-            {otherPlatforms.length > 0 && (
-              <div className="pt-2 flex items-center justify-center gap-3 text-xs text-slate-500">
-                <span>أو تواصل معنا عبر:</span>
-                {otherPlatforms.map((p) => (
-                  <a
-                    key={p.id}
-                    href={getOrderPlatformUrl(p.url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-slate-900 inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
-                  >
-                    <SocialIcon icon={p.icon} className="w-3 h-3 text-slate-600" />
-                    <span>{p.name}</span>
-                  </a>
+          {/* Features Checklist */}
+          {product.features && product.features.length > 0 && (
+            <div className="mb-5">
+              <span className="text-xs font-bold text-[#080B0F] block mb-2.5">
+                مميزات الاشتراك:
+              </span>
+              <div className="space-y-2">
+                {product.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-xs text-[#080B0F]">
+                    <div className="w-4 h-4 rounded-full bg-[#FF3B30]/10 text-[#FF3B30] flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-[#FF3B30]" />
+                    </div>
+                    <span className="text-[#080B0F] leading-relaxed">{feature}</span>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="p-3 bg-slate-100 rounded-xl text-center text-xs text-slate-500 font-semibold flex items-center justify-center gap-2">
-            <AlertCircle className="w-4 h-4" />
-            <span>هذا الاشتراك غير متوفر حالياً. يمكنك الاستفسار عنه عبر الدعم.</span>
-          </div>
-        )}
+            </div>
+          )}
 
+          {/* Guarantee Box */}
+          {product.guarantee && (
+            <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E7EB] flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#FF3B30] shrink-0 mt-0.5" />
+              <div className="text-xs text-[#6B7280]">
+                <strong className="text-[#080B0F] font-bold block mb-0.5">ضمان Yovo المعتمد:</strong>
+                <p className="leading-relaxed">{product.guarantee}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Action CTAs */}
+          <div className="pt-2 flex flex-col gap-2">
+            <button
+              id="modal-order-btn"
+              type="button"
+              disabled={!isAvailable}
+              onClick={() => {
+                if (typeof window.fbq === 'function') {
+                  window.fbq('track', 'Contact');
+                }
+                if (onOrderNow) {
+                  onOrderNow(product, currentPlan);
+                }
+                onClose();
+              }}
+              className={`w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                isAvailable
+                  ? 'bg-[#FF3B30] text-white hover:bg-[#E02D22] shadow-sm shadow-[#FF3B30]/25 active:scale-98'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {isAvailable ? (
+                <>
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>اطلب الآن عبر Instagram</span>
+                  <ArrowUpLeft className="w-4 h-4" />
+                </>
+              ) : (
+                <span>الاشتراك غير متوفر حالياً</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-2.5 text-center text-xs font-semibold text-[#6B7280] hover:text-[#080B0F] transition-colors cursor-pointer"
+            >
+              متابعة تصفح الاشتراكات
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

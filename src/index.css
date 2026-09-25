@@ -1,29 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Cairo", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --font-brand: "Plus Jakarta Sans", "Cairo", system-ui, sans-serif;
+  --font-sans: "Tajawal", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-brand: "Plus Jakarta Sans", "Tajawal", system-ui, sans-serif;
+
+  --color-yovo-black: #080B0F;
+  --color-yovo-white: #FFFFFF;
+  --color-yovo-red: #FF3B30;
+  --color-yovo-red-light: #FF6B6B;
+  --color-yovo-gray: #6B7280;
+  --color-yovo-gray-light: #F3F4F6;
+  --color-yovo-border: #E5E7EB;
+}
+
+:root {
+  --yovo-black: #080B0F;
+  --yovo-white: #FFFFFF;
+  --yovo-red: #FF3B30;
+  --yovo-red-light: #FF6B6B;
+  --yovo-gray: #6B7280;
+  --yovo-gray-light: #F3F4F6;
+  --yovo-border: #E5E7EB;
 }
 
 body {
   font-family: var(--font-sans);
+  background-color: var(--yovo-white);
+  color: var(--yovo-black);
 }
 
 .font-brand {
   font-family: var(--font-brand);
 }
 
-/* Custom smooth scrollbar */
+/* Yovo Commerce Card Hover Transition */
+@media (prefers-reduced-motion: no-preference) {
+  .yovo-card-hover {
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  }
+  .yovo-card-hover:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f3f4f6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d1d5db;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9ca3af;
 }
+
+

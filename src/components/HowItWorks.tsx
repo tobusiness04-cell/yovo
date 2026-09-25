@@ -17,68 +17,69 @@ export const HowItWorks: React.FC = () => {
     },
     {
       number: '03',
-      title: 'راسلنا',
-      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر Instagram مع تفاصيل طلبك.',
+      title: 'راسلنا عبر Instagram',
+      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر Instagram مع رسالة طلبك الجاهزة.',
       icon: Send,
     },
     {
       number: '04',
-      title: 'نكمّلو معاك عملية التفعيل',
+      title: 'استلم اشتراكك مفعلاً',
       description: 'يتم تأكيد الطلب وتفعيل اشتراكك في دقائق مع إرشادات مبسطة للاستخدام ودعم فني.',
       icon: CheckCircle,
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-24 bg-white border-b border-slate-200/80">
+    <section id="how-it-works" className="py-14 sm:py-20 bg-white border-b border-[#E5E7EB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block">
-            خطوات بسيطة وسريعة
-          </span>
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3F4F6] text-[#080B0F] text-xs font-bold mb-3 border border-[#E5E7EB]">
+            <span className="w-2 h-2 rounded-full bg-[#FF3B30]"></span>
+            <span>خطوات بسيطة وسريعة</span>
+          </div>
           <h2
             id="how-it-works-title"
-            className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight"
+            className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#080B0F] tracking-tight"
           >
-            كيفاش تطلب؟
+            كيفاش تطلب اشتراكك في 4 خطوات؟
           </h2>
-          <p className="text-base text-slate-500 mt-2 font-normal">
-            4 خطوات ساهلة باش تتحصل على اشتراكك في أسرع وقت
+          <p className="text-sm text-[#6B7280] mt-2 font-normal">
+            عملية طلب سهلة وبسيطة وسريعة بدون أي تعقيدات
           </p>
         </div>
 
         {/* 4 Steps Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative">
           {steps.map((step, idx) => {
             const Icon = step.icon;
             return (
               <div
                 key={step.number}
                 id={`step-card-${step.number}`}
-                className="relative bg-slate-50/70 hover:bg-slate-50 rounded-3xl p-6 border border-slate-200/70 transition-all flex flex-col justify-between"
+                className="relative bg-[#F3F4F6] hover:bg-gray-100 rounded-2xl p-6 border border-[#E5E7EB] hover:border-[#080B0F] transition-all flex flex-col justify-between yovo-card-hover"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="w-10 h-10 rounded-xl bg-slate-900 text-white font-brand font-bold text-sm flex items-center justify-center">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="w-10 h-10 rounded-xl bg-[#080B0F] text-white font-brand font-black text-sm flex items-center justify-center shadow-xs">
                       {step.number}
                     </span>
-                    <div className="p-2.5 rounded-xl bg-white text-slate-700 shadow-2xs border border-slate-200/60">
-                      <Icon className="w-5 h-5 text-sky-600" />
+                    <div className="p-2.5 rounded-xl bg-white text-[#080B0F] shadow-xs border border-[#E5E7EB]">
+                      <Icon className="w-4 h-4 text-[#FF3B30]" />
                     </div>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-900 mb-2">
+                  <h3 className="text-base font-bold text-[#080B0F] mb-1.5">
                     {step.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  <p className="text-xs text-[#6B7280] leading-relaxed font-normal">
                     {step.description}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-3 text-[11px] font-semibold text-slate-400">
+                <div className="mt-5 pt-3 text-[11px] font-bold text-[#FF3B30] border-t border-[#E5E7EB]">
                   خطوة {idx + 1} من 4
                 </div>
               </div>
@@ -90,3 +91,4 @@ export const HowItWorks: React.FC = () => {
     </section>
   );
 };
+

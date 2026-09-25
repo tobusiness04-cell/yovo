@@ -9,8 +9,8 @@ import {
   getDocs,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType, isFirebaseConfigured } from '../lib/firebase';
-import { Product, Category, StoreConfig } from '../types';
+import { db, handleFirestoreError, OperationType, isFirebaseConfigured, sanitizeForFirestore } from '../lib/firebase';
+import { Product, Category, StoreConfig, Order, OrderStatus, Expense, AdCampaign, LandingPage } from '../types';
 import { initialProducts } from '../data/products';
 import { storeConfig as defaultStoreConfig } from '../config';
 
@@ -278,9 +278,11 @@ export async function saveProduct(product: Partial<Product>): Promise<string> {
     productData.createdAt = isFirebaseConfigured ? serverTimestamp() : now;
   }
 
+  const sanitizedData = sanitizeForFirestore(productData);
+
   if (db && isFirebaseConfigured) {
     try {
-      await setDoc(doc(db, 'products', productId), productData, { merge: true });
+      await setDoc(doc(db, 'products', productId), sanitizedData, { merge: true });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `products/${productId}`);
     }
@@ -290,9 +292,9 @@ export async function saveProduct(product: Partial<Product>): Promise<string> {
   const local = getLocalProducts();
   const index = local.findIndex((p) => p.id === productId);
   if (index >= 0) {
-    local[index] = { ...local[index], ...productData };
+    local[index] = { ...local[index], ...sanitizedData };
   } else {
-    local.push(productData as Product);
+    local.push(sanitizedData as Product);
   }
   saveLocalProducts(local);
 
@@ -466,3 +468,774 @@ export async function seedInitialData(): Promise<{ productsCount: number; catego
 
   return { productsCount: seededProducts, categoriesCount: seededCategories };
 }
+
+// ----------------------------------------------------
+// Local storage helpers for Order, Expense, Campaign, LandingPage
+// ----------------------------------------------------
+const LOCAL_STORAGE_ORDERS_KEY = 'yovo_orders_cache';
+const LOCAL_STORAGE_EXPENSES_KEY = 'yovo_expenses_cache';
+const LOCAL_STORAGE_CAMPAIGNS_KEY = 'yovo_campaigns_cache';
+const LOCAL_STORAGE_LANDING_PAGES_KEY = 'yovo_landing_pages_cache';
+
+function getLocalOrders(): Order[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_ORDERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalOrders(orders: Order[]): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_ORDERS_KEY, JSON.stringify(orders));
+  } catch (e) {
+    console.warn('Could not save orders to localStorage:', e);
+  }
+}
+
+function getLocalExpenses(): Expense[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_EXPENSES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalExpenses(expenses: Expense[]): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_EXPENSES_KEY, JSON.stringify(expenses));
+  } catch (e) {
+    console.warn('Could not save expenses to localStorage:', e);
+  }
+}
+
+function getLocalCampaigns(): AdCampaign[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_CAMPAIGNS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalCampaigns(campaigns: AdCampaign[]): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_CAMPAIGNS_KEY, JSON.stringify(campaigns));
+  } catch (e) {
+    console.warn('Could not save campaigns to localStorage:', e);
+  }
+}
+
+function getLocalLandingPages(): LandingPage[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_LANDING_PAGES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalLandingPages(pages: LandingPage[]): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_LANDING_PAGES_KEY, JSON.stringify(pages));
+  } catch (e) {
+    console.warn('Could not save landing pages to localStorage:', e);
+  }
+}
+
+// ----------------------------------------------------
+// ORDERS SERVICE
+// ----------------------------------------------------
+
+export function generateOrderId(): string {
+  const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `ORD-${datePart}-${rand}`;
+}
+
+export interface CreateOrderParams {
+  product?: Product;
+  productId?: string;
+  productName?: string;
+  plan?: { id: string; duration: string; price: number | string; purchaseCost?: number; adCost?: number; otherCost?: number };
+  planId?: string;
+  planName?: string;
+  sellingPrice?: number;
+  currency?: string;
+  productCost?: number;
+  adCost?: number;
+  paymentFee?: number;
+  otherCosts?: number;
+  customerInstagram?: string;
+  customerName?: string;
+  landingPageId?: string;
+  notes?: string;
+}
+
+/**
+ * Creates an order record with initial 'pending' status.
+ * Used when a visitor clicks "اطلب الآن" / Instagram order flow.
+ */
+export async function createPendingOrder(params: CreateOrderParams): Promise<Order> {
+  const orderId = generateOrderId();
+  const sellingPrice =
+    params.sellingPrice !== undefined
+      ? Number(params.sellingPrice)
+      : Number(params.plan?.price ?? params.product?.price) || 0;
+
+  // Resolve plan or product-level default costs
+  const productCost =
+    params.productCost !== undefined
+      ? Number(params.productCost)
+      : Number(params.plan?.purchaseCost ?? params.product?.purchaseCost ?? 0);
+  const adCost =
+    params.adCost !== undefined
+      ? Number(params.adCost)
+      : Number(params.plan?.adCost ?? params.product?.adCost ?? 0);
+  const paymentFee = params.paymentFee !== undefined ? Number(params.paymentFee) : 0;
+  const otherCosts =
+    params.otherCosts !== undefined
+      ? Number(params.otherCosts)
+      : Number(params.plan?.otherCost ?? params.product?.otherCosts ?? 0);
+  const totalCost = productCost + adCost + paymentFee + otherCosts;
+  const profit = sellingPrice - totalCost;
+
+  const nowIso = new Date().toISOString();
+
+  const newOrder: Order = {
+    id: orderId,
+    productId: params.productId || params.product?.id || 'unknown',
+    productName: params.productName || params.product?.name || 'اشتراك رقمي',
+    planId: params.planId || params.plan?.id || 'default',
+    planName: params.planName || params.plan?.duration || params.product?.duration || 'شهري',
+    sellingPrice,
+    productCost,
+    adCost,
+    paymentFee,
+    otherCosts,
+    totalCost,
+    profit,
+    customerInstagram: params.customerInstagram?.trim() || '',
+    customerName: params.customerName?.trim() || '',
+    notes: params.notes?.trim() || '',
+    status: 'pending',
+    landingPageId: params.landingPageId || '',
+    currency: params.currency || params.product?.currency || 'دج',
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+
+  if (db && isFirebaseConfigured) {
+    const firestorePayload = sanitizeForFirestore({
+      id: newOrder.id,
+      productId: newOrder.productId,
+      productName: newOrder.productName,
+      planId: newOrder.planId,
+      planName: newOrder.planName,
+      sellingPrice: newOrder.sellingPrice,
+      productCost: newOrder.productCost,
+      adCost: newOrder.adCost,
+      paymentFee: newOrder.paymentFee,
+      otherCosts: newOrder.otherCosts,
+      totalCost: newOrder.totalCost,
+      profit: newOrder.profit,
+      customerInstagram: newOrder.customerInstagram,
+      customerName: newOrder.customerName,
+      notes: newOrder.notes,
+      status: 'pending',
+      landingPageId: newOrder.landingPageId,
+      currency: newOrder.currency,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    try {
+      await setDoc(doc(db, 'orders', orderId), firestorePayload);
+      console.log('REAL FIRESTORE ORDER CREATED SUCCESSFULLY at orders/' + orderId);
+    } catch (error: any) {
+      console.error('REAL FIRESTORE ORDER CREATION FAILED:', {
+        errorCode: error?.code,
+        errorMessage: error?.message,
+        firestorePath: `orders/${orderId}`,
+        operation: 'create',
+        payload: firestorePayload,
+      });
+      // CRITICAL: Stop silent fallback to localStorage.
+      // Firestore is the sole source of truth in production.
+      throw error;
+    }
+  }
+
+  // Update local cache ONLY when write succeeds
+  const local = getLocalOrders();
+  local.unshift(newOrder);
+  saveLocalOrders(local);
+
+  return newOrder;
+}
+
+/**
+ * Real-time subscription to Orders
+ */
+export function subscribeOrders(
+  callback: (orders: Order[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  if (!db || !isFirebaseConfigured) {
+    callback(getLocalOrders());
+    const handleStorage = () => callback(getLocalOrders());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }
+
+  const ordersCol = collection(db, 'orders');
+
+  const unsubscribe = onSnapshot(
+    ordersCol,
+    (snapshot) => {
+      const orders: Order[] = [];
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        const sellingPrice = Number(d.sellingPrice) || 0;
+        const productCost = Number(d.productCost) || 0;
+        const adCost = Number(d.adCost) || 0;
+        const paymentFee = Number(d.paymentFee) || 0;
+        const otherCosts = Number(d.otherCosts) || 0;
+        const totalCost = Number(d.totalCost) || (productCost + adCost + paymentFee + otherCosts);
+        const profit = Number(d.profit) ?? (sellingPrice - totalCost);
+
+        orders.push({
+          id: docSnap.id,
+          productId: d.productId || '',
+          productName: d.productName || 'منتج',
+          planId: d.planId || '',
+          planName: d.planName || 'خطة',
+          sellingPrice,
+          productCost,
+          adCost,
+          paymentFee,
+          otherCosts,
+          totalCost,
+          profit,
+          customerInstagram: d.customerInstagram || '',
+          customerName: d.customerName || '',
+          customerPhone: d.customerPhone || '',
+          notes: d.notes || '',
+          status: (d.status as OrderStatus) || 'pending',
+          landingPageId: d.landingPageId || '',
+          currency: d.currency || 'دج',
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate().toISOString() : (d.createdAt || new Date().toISOString()),
+          completedAt: d.completedAt?.toDate ? d.completedAt.toDate().toISOString() : d.completedAt,
+          cancelledAt: d.cancelledAt?.toDate ? d.cancelledAt.toDate().toISOString() : d.cancelledAt,
+          updatedAt: d.updatedAt?.toDate ? d.updatedAt.toDate().toISOString() : d.updatedAt,
+        });
+      });
+
+      // Sort newest first
+      orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      saveLocalOrders(orders);
+      callback(orders);
+    },
+    (err) => {
+      console.warn('Orders subscription error:', err);
+      if (onError) onError(err);
+      callback(getLocalOrders());
+    }
+  );
+
+  return unsubscribe;
+}
+
+/**
+ * Update order status (pending -> completed / cancelled)
+ */
+export async function updateOrderStatus(
+  orderId: string,
+  newStatus: OrderStatus,
+  notes?: string
+): Promise<void> {
+  const nowIso = new Date().toISOString();
+  const localOrders = getLocalOrders();
+  const existingOrder = localOrders.find((ord) => ord.id === orderId);
+
+  const partialUpdate: Record<string, any> = {
+    status: newStatus,
+    updatedAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+  };
+
+  if (newStatus === 'completed') {
+    partialUpdate.completedAt = isFirebaseConfigured ? serverTimestamp() : nowIso;
+  } else if (newStatus === 'cancelled') {
+    partialUpdate.cancelledAt = isFirebaseConfigured ? serverTimestamp() : nowIso;
+  }
+
+  if (notes !== undefined && notes !== null) {
+    partialUpdate.notes = notes;
+  }
+
+  const sanitizedPartial = sanitizeForFirestore(partialUpdate);
+
+  if (db && isFirebaseConfigured) {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), sanitizedPartial);
+    } catch (error: any) {
+      if (error?.code === 'not-found') {
+        try {
+          const fullData = sanitizeForFirestore({
+            ...(existingOrder || {}),
+            id: orderId,
+            ...sanitizedPartial,
+            createdAt: existingOrder?.createdAt || (isFirebaseConfigured ? serverTimestamp() : nowIso),
+          });
+          await setDoc(doc(db, 'orders', orderId), fullData, { merge: true });
+        } catch (setErr) {
+          handleFirestoreError(setErr, OperationType.UPDATE, `orders/${orderId}`);
+        }
+      } else {
+        handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
+      }
+    }
+  }
+
+  // Update local
+  const local = localOrders.map((ord) => {
+    if (ord.id === orderId) {
+      return {
+        ...ord,
+        status: newStatus,
+        ...(newStatus === 'completed' ? { completedAt: nowIso } : {}),
+        ...(newStatus === 'cancelled' ? { cancelledAt: nowIso } : {}),
+        ...(notes !== undefined ? { notes } : {}),
+        updatedAt: nowIso,
+      };
+    }
+    return ord;
+  });
+  saveLocalOrders(local);
+}
+
+/**
+ * Update full order details (costs, customer info, notes)
+ */
+export async function updateOrderDetails(
+  orderId: string,
+  patch: Partial<Order>
+): Promise<void> {
+  const nowIso = new Date().toISOString();
+  const localOrders = getLocalOrders();
+  const existingOrder = localOrders.find((ord) => ord.id === orderId);
+
+  const sellingPrice = patch.sellingPrice ?? existingOrder?.sellingPrice ?? 0;
+  const productCost = patch.productCost ?? existingOrder?.productCost ?? 0;
+  const adCost = patch.adCost ?? existingOrder?.adCost ?? 0;
+  const paymentFee = patch.paymentFee ?? existingOrder?.paymentFee ?? 0;
+  const otherCosts = patch.otherCosts ?? existingOrder?.otherCosts ?? 0;
+  const totalCost = productCost + adCost + paymentFee + otherCosts;
+  const profit = sellingPrice - totalCost;
+
+  const patchToApply: Record<string, any> = {
+    ...patch,
+    totalCost,
+    profit,
+    updatedAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+  };
+
+  const sanitizedPatch = sanitizeForFirestore(patchToApply);
+
+  if (db && isFirebaseConfigured) {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), sanitizedPatch);
+    } catch (error: any) {
+      if (error?.code === 'not-found') {
+        try {
+          const fullData = sanitizeForFirestore({
+            ...(existingOrder || {}),
+            ...sanitizedPatch,
+            id: orderId,
+            createdAt: existingOrder?.createdAt || (isFirebaseConfigured ? serverTimestamp() : nowIso),
+          });
+          await setDoc(doc(db, 'orders', orderId), fullData, { merge: true });
+        } catch (setErr) {
+          handleFirestoreError(setErr, OperationType.UPDATE, `orders/${orderId}`);
+        }
+      } else {
+        handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
+      }
+    }
+  }
+
+  const local = localOrders.map((ord) =>
+    ord.id === orderId ? { ...ord, ...patch, totalCost, profit, updatedAt: nowIso } : ord
+  );
+  saveLocalOrders(local);
+}
+
+/**
+ * Delete order
+ */
+export async function deleteOrder(orderId: string): Promise<void> {
+  if (db && isFirebaseConfigured) {
+    try {
+      await deleteDoc(doc(db, 'orders', orderId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `orders/${orderId}`);
+    }
+  }
+
+  const local = getLocalOrders().filter((ord) => ord.id !== orderId);
+  saveLocalOrders(local);
+}
+
+// ----------------------------------------------------
+// EXPENSES SERVICE
+// ----------------------------------------------------
+
+export function subscribeExpenses(
+  callback: (expenses: Expense[]) => void
+): () => void {
+  if (!db || !isFirebaseConfigured) {
+    callback(getLocalExpenses());
+    const handleStorage = () => callback(getLocalExpenses());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }
+
+  const expCol = collection(db, 'expenses');
+  const unsubscribe = onSnapshot(
+    expCol,
+    (snapshot) => {
+      const expenses: Expense[] = [];
+      snapshot.forEach((snap) => {
+        const d = snap.data();
+        expenses.push({
+          id: snap.id,
+          description: d.description || '',
+          amount: Number(d.amount) || 0,
+          category: d.category || 'other',
+          date: d.date || new Date().toISOString().slice(0, 10),
+          productId: d.productId || '',
+          campaignId: d.campaignId || '',
+          notes: d.notes || '',
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate().toISOString() : (d.createdAt || new Date().toISOString()),
+        });
+      });
+
+      expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      saveLocalExpenses(expenses);
+      callback(expenses);
+    },
+    (err) => {
+      console.warn('Expenses subscription error:', err);
+      callback(getLocalExpenses());
+    }
+  );
+
+  return unsubscribe;
+}
+
+export async function saveExpense(expense: Partial<Expense>): Promise<string> {
+  const expenseId = expense.id || `exp_${Date.now()}`;
+  const nowIso = new Date().toISOString();
+
+  const data: Expense = {
+    id: expenseId,
+    description: expense.description || '',
+    amount: Number(expense.amount) || 0,
+    category: expense.category || 'other',
+    date: expense.date || nowIso.slice(0, 10),
+    productId: expense.productId || '',
+    campaignId: expense.campaignId || '',
+    notes: expense.notes || '',
+    createdAt: expense.createdAt || nowIso,
+  };
+
+  const sanitizedExpense = sanitizeForFirestore({
+    ...data,
+    createdAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+  });
+
+  if (db && isFirebaseConfigured) {
+    try {
+      await setDoc(doc(db, 'expenses', expenseId), sanitizedExpense, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `expenses/${expenseId}`);
+    }
+  }
+
+  const local = getLocalExpenses();
+  const idx = local.findIndex((e) => e.id === expenseId);
+  if (idx >= 0) {
+    local[idx] = data;
+  } else {
+    local.unshift(data);
+  }
+  saveLocalExpenses(local);
+
+  return expenseId;
+}
+
+export async function deleteExpense(expenseId: string): Promise<void> {
+  if (db && isFirebaseConfigured) {
+    try {
+      await deleteDoc(doc(db, 'expenses', expenseId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `expenses/${expenseId}`);
+    }
+  }
+
+  const local = getLocalExpenses().filter((e) => e.id !== expenseId);
+  saveLocalExpenses(local);
+}
+
+// ----------------------------------------------------
+// ADVERTISING CAMPAIGNS SERVICE
+// ----------------------------------------------------
+
+export function subscribeAdCampaigns(
+  callback: (campaigns: AdCampaign[]) => void
+): () => void {
+  if (!db || !isFirebaseConfigured) {
+    callback(getLocalCampaigns());
+    const handleStorage = () => callback(getLocalCampaigns());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }
+
+  const colRef = collection(db, 'adCampaigns');
+  const unsubscribe = onSnapshot(
+    colRef,
+    (snapshot) => {
+      const campaigns: AdCampaign[] = [];
+      snapshot.forEach((snap) => {
+        const d = snap.data();
+        campaigns.push({
+          id: snap.id,
+          name: d.name || '',
+          platform: d.platform || 'meta_ads',
+          productId: d.productId || '',
+          amountSpent: Number(d.amountSpent) || 0,
+          startDate: d.startDate || new Date().toISOString().slice(0, 10),
+          endDate: d.endDate || '',
+          notes: d.notes || '',
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate().toISOString() : (d.createdAt || new Date().toISOString()),
+        });
+      });
+
+      campaigns.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      saveLocalCampaigns(campaigns);
+      callback(campaigns);
+    },
+    (err) => {
+      console.warn('AdCampaigns subscription error:', err);
+      callback(getLocalCampaigns());
+    }
+  );
+
+  return unsubscribe;
+}
+
+export async function saveAdCampaign(campaign: Partial<AdCampaign>): Promise<string> {
+  const campaignId = campaign.id || `camp_${Date.now()}`;
+  const nowIso = new Date().toISOString();
+
+  const data: AdCampaign = {
+    id: campaignId,
+    name: campaign.name || '',
+    platform: campaign.platform || 'meta_ads',
+    productId: campaign.productId || '',
+    amountSpent: Number(campaign.amountSpent) || 0,
+    startDate: campaign.startDate || nowIso.slice(0, 10),
+    endDate: campaign.endDate || '',
+    notes: campaign.notes || '',
+    createdAt: campaign.createdAt || nowIso,
+  };
+
+  const sanitizedCampaign = sanitizeForFirestore({
+    ...data,
+    createdAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+  });
+
+  if (db && isFirebaseConfigured) {
+    try {
+      await setDoc(doc(db, 'adCampaigns', campaignId), sanitizedCampaign, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `adCampaigns/${campaignId}`);
+    }
+  }
+
+  const local = getLocalCampaigns();
+  const idx = local.findIndex((c) => c.id === campaignId);
+  if (idx >= 0) {
+    local[idx] = data;
+  } else {
+    local.unshift(data);
+  }
+  saveLocalCampaigns(local);
+
+  return campaignId;
+}
+
+export async function deleteAdCampaign(campaignId: string): Promise<void> {
+  if (db && isFirebaseConfigured) {
+    try {
+      await deleteDoc(doc(db, 'adCampaigns', campaignId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `adCampaigns/${campaignId}`);
+    }
+  }
+
+  const local = getLocalCampaigns().filter((c) => c.id !== campaignId);
+  saveLocalCampaigns(local);
+}
+
+// ----------------------------------------------------
+// LANDING PAGES SERVICE
+// ----------------------------------------------------
+
+export function subscribeLandingPages(
+  callback: (pages: LandingPage[]) => void
+): () => void {
+  if (!db || !isFirebaseConfigured) {
+    callback(getLocalLandingPages());
+    const handleStorage = () => callback(getLocalLandingPages());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }
+
+  const colRef = collection(db, 'landingPages');
+  const unsubscribe = onSnapshot(
+    colRef,
+    (snapshot) => {
+      const pages: LandingPage[] = [];
+      snapshot.forEach((snap) => {
+        const d = snap.data();
+        pages.push({
+          id: snap.id,
+          name: d.name || '',
+          slug: d.slug || snap.id,
+          active: d.active !== false,
+          productId: d.productId || '',
+          planId: d.planId || '',
+          heroTitle: d.heroTitle || '',
+          heroDescription: d.heroDescription || '',
+          badgeText: d.badgeText || '',
+          imageUrl: d.imageUrl || '',
+          benefits: Array.isArray(d.benefits) ? d.benefits : [],
+          features: Array.isArray(d.features) ? d.features : [],
+          faq: Array.isArray(d.faq) ? d.faq : [],
+          ctaText: d.ctaText || 'اطلب الآن عبر Instagram',
+          displayOrder: Number(d.displayOrder) || 1,
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate().toISOString() : (d.createdAt || new Date().toISOString()),
+          updatedAt: d.updatedAt?.toDate ? d.updatedAt.toDate().toISOString() : d.updatedAt,
+        });
+      });
+
+      pages.sort((a, b) => (a.displayOrder ?? 99) - (b.displayOrder ?? 99));
+      saveLocalLandingPages(pages);
+      callback(pages);
+    },
+    (err) => {
+      console.warn('LandingPages subscription error:', err);
+      callback(getLocalLandingPages());
+    }
+  );
+
+  return unsubscribe;
+}
+
+export async function saveLandingPage(page: Partial<LandingPage>): Promise<string> {
+  const pageId = page.id || `lp_${Date.now()}`;
+  const nowIso = new Date().toISOString();
+
+  // Normalize planId: save if present, or null if intentionally absent
+  const planIdNormalized = page.planId && typeof page.planId === 'string' && page.planId.trim()
+    ? page.planId.trim()
+    : null;
+
+  const rawData: Record<string, any> = {
+    ...page,
+    id: pageId,
+    productId: page.productId || '',
+    planId: planIdNormalized,
+    slug: (page.slug || page.name || pageId).toLowerCase().trim().replace(/[^a-z0-9\u0621-\u064A]+/g, '-').replace(/^-+|-+$/g, ''),
+    updatedAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+  };
+
+  if (!page.id) {
+    rawData.createdAt = isFirebaseConfigured ? serverTimestamp() : nowIso;
+  }
+
+  const sanitizedData = sanitizeForFirestore(rawData);
+
+  if (db && isFirebaseConfigured) {
+    try {
+      await setDoc(doc(db, 'landingPages', pageId), sanitizedData, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `landingPages/${pageId}`);
+    }
+  }
+
+  const local = getLocalLandingPages();
+  const idx = local.findIndex((p) => p.id === pageId);
+  const localPage: LandingPage = {
+    ...(local[idx] || {}),
+    ...(sanitizedData as any),
+    planId: planIdNormalized || undefined,
+    createdAt: typeof sanitizedData.createdAt === 'string' ? sanitizedData.createdAt : nowIso,
+    updatedAt: nowIso,
+  };
+
+  if (idx >= 0) {
+    local[idx] = localPage;
+  } else {
+    local.push(localPage);
+  }
+  saveLocalLandingPages(local);
+
+  return pageId;
+}
+
+export async function toggleLandingPageStatus(pageId: string, currentActive: boolean): Promise<void> {
+  const newActive = !currentActive;
+  if (db && isFirebaseConfigured) {
+    try {
+      await updateDoc(doc(db, 'landingPages', pageId), {
+        active: newActive,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `landingPages/${pageId}`);
+    }
+  }
+
+  const local = getLocalLandingPages().map((p) =>
+    p.id === pageId ? { ...p, active: newActive } : p
+  );
+  saveLocalLandingPages(local);
+}
+
+export async function deleteLandingPage(pageId: string): Promise<void> {
+  if (db && isFirebaseConfigured) {
+    try {
+      await deleteDoc(doc(db, 'landingPages', pageId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `landingPages/${pageId}`);
+    }
+  }
+
+  const local = getLocalLandingPages().filter((p) => p.id !== pageId);
+  saveLocalLandingPages(local);
+}
+
+// Subscription & action aliases for intuitive naming
+export const subscribeToOrders = subscribeOrders;
+export const subscribeToExpenses = subscribeExpenses;
+export const subscribeAdCampaignsAlias = subscribeAdCampaigns;
+export const subscribeCampaigns = subscribeAdCampaigns;
+export const subscribeToCampaigns = subscribeAdCampaigns;
+export const subscribeToLandingPages = subscribeLandingPages;
+export const saveCampaign = saveAdCampaign;
+export const deleteCampaign = deleteAdCampaign;

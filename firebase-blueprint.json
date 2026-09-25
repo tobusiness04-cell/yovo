@@ -22,6 +22,10 @@
         "guarantee": { "type": "string", "maxLength": 300 },
         "activationTime": { "type": "string", "maxLength": 100 },
         "plans": { "type": "array" },
+        "purchaseCost": { "type": "number" },
+        "adCost": { "type": "number" },
+        "otherCosts": { "type": "number" },
+        "targetMargin": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -39,6 +43,101 @@
         "displayOrder": { "type": "number" }
       },
       "required": ["name", "slug"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order record tracking status, costs, and profit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string", "maxLength": 100 },
+        "productName": { "type": "string", "maxLength": 100 },
+        "planId": { "type": "string", "maxLength": 100 },
+        "planName": { "type": "string", "maxLength": 100 },
+        "sellingPrice": { "type": "number" },
+        "productCost": { "type": "number" },
+        "adCost": { "type": "number" },
+        "paymentFee": { "type": "number" },
+        "otherCosts": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "profit": { "type": "number" },
+        "customerInstagram": { "type": "string", "maxLength": 100 },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["pending", "completed", "cancelled"] },
+        "landingPageId": { "type": "string", "maxLength": 100 },
+        "currency": { "type": "string", "maxLength": 10 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "cancelledAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["productId", "sellingPrice", "status"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Business expense or direct cost entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string", "maxLength": 200 },
+        "amount": { "type": "number" },
+        "category": {
+          "type": "string",
+          "enum": ["product_purchase", "advertising", "payment_fees", "domain_hosting", "software", "other"]
+        },
+        "date": { "type": "string", "maxLength": 50 },
+        "productId": { "type": "string", "maxLength": 100 },
+        "campaignId": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["description", "amount", "category", "date"]
+    },
+    "AdCampaign": {
+      "title": "AdCampaign",
+      "description": "Advertising campaign spend and attribution record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 150 },
+        "platform": {
+          "type": "string",
+          "enum": ["meta_ads", "tiktok_ads", "google_ads", "influencer", "other"]
+        },
+        "productId": { "type": "string", "maxLength": 100 },
+        "amountSpent": { "type": "number" },
+        "startDate": { "type": "string", "maxLength": 50 },
+        "endDate": { "type": "string", "maxLength": 50 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "platform", "amountSpent", "startDate"]
+    },
+    "LandingPage": {
+      "title": "LandingPage",
+      "description": "Custom high-converting dynamic subscription landing page",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 150 },
+        "slug": { "type": "string", "maxLength": 100 },
+        "active": { "type": "boolean" },
+        "productId": { "type": "string", "maxLength": 100 },
+        "planId": { "type": "string", "maxLength": 100 },
+        "heroTitle": { "type": "string", "maxLength": 200 },
+        "heroDescription": { "type": "string", "maxLength": 500 },
+        "badgeText": { "type": "string", "maxLength": 100 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "benefits": { "type": "array" },
+        "features": { "type": "array" },
+        "faq": { "type": "array" },
+        "ctaText": { "type": "string", "maxLength": 100 },
+        "displayOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "slug", "productId", "active"]
     },
     "StoreSettings": {
       "title": "StoreSettings",
@@ -83,6 +182,22 @@
     "/admins/{adminId}": {
       "schema": "AdminUser",
       "description": "Authorized administrator users"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Orders initiated by customers and managed by store administrators"
+    },
+    "/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Business and product expenses managed by store administrators"
+    },
+    "/adCampaigns/{campaignId}": {
+      "schema": "AdCampaign",
+      "description": "Ad campaigns and marketing spend records"
+    },
+    "/landingPages/{landingPageId}": {
+      "schema": "LandingPage",
+      "description": "Public dynamic subscription landing pages configured by administrators"
     }
   }
 }

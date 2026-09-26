@@ -174,7 +174,7 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
           <button
             type="button"
             onClick={handleCopyAndOpen}
-            className="px-4 py-2 rounded-xl bg-[#FF3B30] hover:bg-[#E02D22] text-white text-xs font-bold inline-flex items-center gap-2 transition-all shadow-sm shadow-[#FF3B30]/30 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 text-white text-xs font-bold inline-flex items-center gap-2 transition-all shadow-md shadow-blue-500/20 cursor-pointer"
           >
             <SocialIcon icon={data.platformIcon} className="w-3.5 h-3.5" />
             <span>فتح {data.platformName}</span>

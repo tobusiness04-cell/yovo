@@ -1,5 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="112" fill="#080B0F"/>
-  <path d="M144 128 L256 288 L368 128 H424 L288 328 V400 H224 V328 L88 128 Z" fill="#FFFFFF"/>
-  <circle cx="384" cy="368" r="56" fill="#FF3B30"/>
+  <defs>
+    <linearGradient id="yovoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#yovoGrad)"/>
+  <!-- Bold clean white Y from Yovo typography -->
+  <path d="M148 136 L256 292 L364 136 H430 L292 334 V412 H220 V334 L82 136 Z" fill="#FFFFFF"/>
 </svg>

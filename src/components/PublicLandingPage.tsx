@@ -132,7 +132,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
   };
 
   return (
-    <div className="min-h-screen bg-[#080B0F] text-white flex flex-col font-sans selection:bg-[#FF3B30]/20 selection:text-[#FF3B30]">
+    <div className="min-h-screen bg-[#080B0F] text-white flex flex-col font-sans selection:bg-[#3B82F6]/20 selection:text-[#3B82F6]">
       {/* Top Navbar */}
       <header className="border-b border-gray-800 bg-[#080B0F]/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -149,14 +149,14 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
               <span className="font-brand font-black text-xl tracking-tight text-white uppercase">
                 YOVO
               </span>
-              <span className="w-2 h-2 rounded-full bg-[#FF3B30]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#22D3EE] animate-pulse"></span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={handleOrderClick}
-              className="px-4 py-2 bg-[#FF3B30] hover:bg-[#E02D22] text-white font-bold text-xs rounded-xl transition-all shadow-sm shadow-[#FF3B30]/30 flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer"
             >
               <Instagram className="w-3.5 h-3.5" />
               <span>{landingPage.ctaText || 'اطلب الآن'}</span>
@@ -171,7 +171,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
         <section className="text-center space-y-5">
           {landingPage.badgeText && (
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/10 text-white text-xs font-bold">
-              <span className="w-2 h-2 rounded-full bg-[#FF3B30]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#22D3EE]"></span>
               <span>{landingPage.badgeText}</span>
             </div>
           )}
@@ -187,7 +187,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
 
         {/* Pricing Card & Plan Selector */}
         <section className="bg-[#0e131a] border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF3B30]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#3B82F6]/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Product Header inside Card */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-800">
@@ -217,7 +217,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
               <div className="text-xs text-gray-400">السعر الإجمالي</div>
               <div className="text-3xl sm:text-4xl font-black text-white tracking-tight font-brand">
                 {price.toLocaleString()}{' '}
-                <span className="text-lg font-bold text-[#FF3B30]">{currency}</span>
+                <span className="text-lg font-bold text-[#3B82F6]">{currency}</span>
               </div>
             </div>
           </div>
@@ -237,12 +237,12 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
                     onClick={() => setSelectedPlan(plan)}
                     className={`p-3.5 rounded-2xl text-right transition-all border relative flex flex-col justify-between cursor-pointer ${
                       isSelected
-                        ? 'bg-[#FF3B30]/10 border-[#FF3B30] shadow-sm shadow-[#FF3B30]/20 ring-1 ring-[#FF3B30]'
+                        ? 'bg-[#3B82F6]/10 border-[#3B82F6] shadow-sm shadow-[#3B82F6]/20 ring-1 ring-[#3B82F6]'
                         : 'bg-white/[0.04] border-gray-800 hover:border-gray-700 text-gray-300'
                     }`}
                   >
                     {plan.popular && (
-                      <span className="absolute -top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FF3B30] text-white">
+                      <span className="absolute -top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FACC15] text-slate-950">
                         {plan.note || 'الأكثر طلباً'}
                       </span>
                     )}
@@ -270,7 +270,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
                 value={customerInstagram}
                 onChange={(e) => setCustomerInstagram(e.target.value)}
                 placeholder="@username (اختياري)"
-                className="w-full pr-10 pl-4 py-2.5 bg-black/60 border border-gray-800 rounded-xl text-white text-xs placeholder:text-gray-600 focus:border-[#FF3B30] focus:outline-hidden dir-ltr text-right"
+                className="w-full pr-10 pl-4 py-2.5 bg-black/60 border border-gray-800 rounded-xl text-white text-xs placeholder:text-gray-600 focus:border-[#3B82F6] focus:outline-hidden dir-ltr text-right"
               />
             </div>
           </div>
@@ -289,7 +289,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
               type="button"
               onClick={handleOrderClick}
               disabled={isSubmittingOrder}
-              className="w-full py-4 bg-[#FF3B30] hover:bg-[#E02D22] text-white font-black text-base rounded-2xl transition-all shadow-xl shadow-[#FF3B30]/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="w-full py-4 bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 text-white font-black text-base rounded-2xl transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               <Instagram className="w-5 h-5" />
               <span>{isSubmittingOrder ? 'جارٍ تسجيل الطلب...' : (landingPage.ctaText || 'اطلب الآن عبر Instagram')}</span>
@@ -313,7 +313,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
                   className="bg-[#0e131a] border border-gray-800 rounded-2xl p-4 flex items-center gap-3"
                 >
                   <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center shrink-0 border border-white/10">
-                    <CheckCircle className="w-4 h-4 text-[#FF3B30]" />
+                    <CheckCircle className="w-4 h-4 text-[#22D3EE]" />
                   </div>
                   <span className="text-xs font-bold text-gray-200">{b}</span>
                 </div>
@@ -326,13 +326,13 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
         {product.features && product.features.length > 0 && (
           <section className="bg-[#0e131a] border border-gray-800 rounded-3xl p-6 sm:p-8 space-y-4">
             <h3 className="text-base font-black text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#FF3B30]" />
+              <Zap className="w-5 h-5 text-[#3B82F6]" />
               <span>ما الذي ستحصل عليه في هذا الاشتراك؟</span>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {product.features.map((feat, idx) => (
                 <div key={idx} className="flex items-center gap-2.5 text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-[#FF3B30] shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#22D3EE] shrink-0" />
                   <span>{feat}</span>
                 </div>
               ))}
@@ -344,7 +344,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
         {landingPage.faq && landingPage.faq.length > 0 && (
           <section className="space-y-4">
             <h3 className="text-base font-black text-white text-center flex items-center justify-center gap-2">
-              <HelpCircle className="w-5 h-5 text-[#FF3B30]" />
+              <HelpCircle className="w-5 h-5 text-[#3B82F6]" />
               <span>الأسئلة الشائعة</span>
             </h3>
 
@@ -364,7 +364,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
                       <span>{item.question}</span>
                       <ChevronDown
                         className={`w-4 h-4 text-gray-400 transition-transform ${
-                          isOpen ? 'rotate-180 text-[#FF3B30]' : ''
+                          isOpen ? 'rotate-180 text-[#3B82F6]' : ''
                         }`}
                       />
                     </button>
@@ -391,7 +391,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
           <button
             type="button"
             onClick={handleOrderClick}
-            className="px-8 py-3.5 bg-[#FF3B30] hover:bg-[#E02D22] text-white font-black text-sm rounded-2xl transition-all shadow-lg shadow-[#FF3B30]/20 inline-flex items-center gap-2 cursor-pointer"
+            className="px-8 py-3.5 bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 text-white font-black text-sm rounded-2xl transition-all shadow-lg shadow-blue-500/20 inline-flex items-center gap-2 cursor-pointer"
           >
             <Instagram className="w-4 h-4" />
             <span>{landingPage.ctaText || 'اطلب الآن عبر Instagram'}</span>

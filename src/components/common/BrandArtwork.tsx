@@ -60,7 +60,7 @@ export const BrandArtwork: React.FC<BrandArtworkProps> = ({
   // 2. CapCut Pro
   if (nameLower.includes('capcut') || idLower.includes('capcut')) {
     return (
-      <div className={`relative w-full h-full bg-[#080B0F] flex items-center justify-center overflow-hidden border border-gray-800 ${className}`}>
+      <div className={`relative w-full h-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-slate-800 ${className}`}>
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:12px_12px]" />
         <div className="flex flex-col items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white text-black flex items-center justify-center shadow-lg relative">
@@ -71,7 +71,7 @@ export const BrandArtwork: React.FC<BrandArtworkProps> = ({
               <circle cx="8" cy="16" r="3" />
               <circle cx="16" cy="8" r="3" />
             </svg>
-            <span className="absolute -top-1.5 -right-1.5 bg-[#FF3B30] text-white text-[8px] font-black px-1 rounded-sm">
+            <span className="absolute -top-1.5 -right-1.5 bg-[#22D3EE] text-slate-950 text-[8px] font-black px-1 rounded-sm">
               PRO
             </span>
           </div>
@@ -183,8 +183,8 @@ export const BrandArtwork: React.FC<BrandArtworkProps> = ({
     .join('');
 
   return (
-    <div className={`relative w-full h-full bg-[#080B0F] flex items-center justify-center overflow-hidden border border-gray-800 ${className}`}>
-      <div className="absolute inset-0 bg-radial from-[#FF3B30]/10 via-transparent to-transparent pointer-events-none" />
+    <div className={`relative w-full h-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-slate-800 ${className}`}>
+      <div className="absolute inset-0 bg-radial from-[#3B82F6]/15 via-transparent to-transparent pointer-events-none" />
       <div className="flex flex-col items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105">
         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 text-white flex items-center justify-center shadow-lg font-brand font-black text-lg sm:text-xl">
           {initials}

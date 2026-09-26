@@ -4,29 +4,34 @@
   --font-sans: "Tajawal", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --font-brand: "Plus Jakarta Sans", "Tajawal", system-ui, sans-serif;
 
-  --color-yovo-black: #080B0F;
+  /* Yovo Brand Design System */
+  --color-yovo-blue: #3B82F6;
+  --color-yovo-cyan: #22D3EE;
+  --color-yovo-purple: #8B5CF6;
+  --color-yovo-yellow: #FACC15;
+  --color-yovo-teal: #10B981;
+  --color-yovo-gray: #F1F5F9;
+  --color-yovo-dark: #0F172A;
   --color-yovo-white: #FFFFFF;
-  --color-yovo-red: #FF3B30;
-  --color-yovo-red-light: #FF6B6B;
-  --color-yovo-gray: #6B7280;
-  --color-yovo-gray-light: #F3F4F6;
-  --color-yovo-border: #E5E7EB;
+  --color-yovo-border: #E2E8F0;
 }
 
 :root {
-  --yovo-black: #080B0F;
+  --yovo-blue: #3B82F6;
+  --yovo-cyan: #22D3EE;
+  --yovo-purple: #8B5CF6;
+  --yovo-yellow: #FACC15;
+  --yovo-teal: #10B981;
+  --yovo-gray: #F1F5F9;
+  --yovo-dark: #0F172A;
   --yovo-white: #FFFFFF;
-  --yovo-red: #FF3B30;
-  --yovo-red-light: #FF6B6B;
-  --yovo-gray: #6B7280;
-  --yovo-gray-light: #F3F4F6;
-  --yovo-border: #E5E7EB;
+  --yovo-border: #E2E8F0;
 }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--yovo-white);
-  color: var(--yovo-black);
+  color: var(--yovo-dark);
 }
 
 .font-brand {

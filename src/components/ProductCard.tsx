@@ -33,8 +33,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       id={`product-card-${product.id}`}
-      className={`group relative bg-white rounded-2xl border border-[#E5E7EB] transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden yovo-card-hover hover:border-[#080B0F] hover:shadow-xl hover:shadow-black/5 ${
-        product.popular ? 'ring-1 ring-[#080B0F]/15' : ''
+      className={`group relative bg-white rounded-2xl border border-slate-200 transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden yovo-card-hover hover:border-[#3B82F6] hover:shadow-xl hover:shadow-blue-500/10 ${
+        product.popular ? 'ring-1 ring-[#3B82F6]/20' : ''
       } ${!isAvailable ? 'opacity-85' : ''}`}
     >
       {/* Clickable Header & Image Container */}
@@ -43,31 +43,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         onClick={() => onSelectProduct(product, defaultPlan)}
       >
         {/* Top Product Artwork Container */}
-        <div className="relative aspect-[16/11] sm:aspect-[4/3] w-full overflow-hidden bg-[#F3F4F6]">
+        <div className="relative aspect-[16/11] sm:aspect-[4/3] w-full overflow-hidden bg-slate-50">
           <BrandArtwork product={product} />
 
           {/* Badges Overlaid on Artwork */}
           <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-20">
             {/* Left: Category Tag */}
-            <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-[#080B0F] shadow-xs backdrop-blur-xs border border-white/50">
+            <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-slate-800 shadow-2xs backdrop-blur-xs border border-slate-200/70">
               {product.category}
             </span>
 
             {/* Right: Status or Popular Badge */}
             <div>
               {!isAvailable ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#080B0F]/80 text-white text-[10px] font-bold backdrop-blur-xs">
-                  <AlertCircle className="w-3 h-3 text-gray-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/80 text-white text-[10px] font-bold backdrop-blur-xs">
+                  <AlertCircle className="w-3 h-3 text-slate-400" />
                   غير متوفر
                 </span>
               ) : product.popular ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FF3B30] text-white text-[10px] font-bold shadow-xs">
-                  <Sparkles className="w-3 h-3 text-white" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FACC15] text-slate-950 text-[10px] font-black shadow-xs">
+                  <Sparkles className="w-3 h-3 text-slate-900" />
                   الأكثر طلباً
                 </span>
               ) : product.activationTime ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-medium backdrop-blur-xs">
-                  <Clock className="w-2.5 h-2.5 text-[#FF3B30]" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-medium backdrop-blur-xs">
+                  <Clock className="w-2.5 h-2.5 text-[#22D3EE]" />
                   سريع
                 </span>
               ) : null}
@@ -78,31 +78,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Card Body Info */}
         <div className="p-3.5 sm:p-4 text-right">
           {/* Product Name */}
-          <h3 className="text-sm sm:text-base font-bold text-[#080B0F] leading-snug truncate group-hover:text-[#FF3B30] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug truncate group-hover:text-[#3B82F6] transition-colors">
             {product.name}
           </h3>
 
           {/* Short Description */}
-          <p className="text-[11px] sm:text-xs text-[#6B7280] mt-1 line-clamp-1 font-normal leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 line-clamp-1 font-normal leading-relaxed">
             {product.description}
           </p>
 
           {/* Pricing Block */}
-          <div className="mt-2.5 pt-2 border-t border-[#F3F4F6] flex items-baseline justify-between">
+          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-baseline justify-between">
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-[#6B7280] font-medium">
+              <span className="text-xs text-slate-400 font-medium">
                 {hasMultiplePlans ? 'من' : ''}
               </span>
-              <span className="text-base sm:text-lg font-black text-[#080B0F] font-brand tracking-tight">
+              <span className="text-base sm:text-lg font-black text-slate-950 font-brand tracking-tight">
                 {formatPrice(displayPrice, product.currency || 'دج')}
               </span>
-              <span className="text-[10px] sm:text-xs text-[#6B7280] font-medium">
+              <span className="text-[10px] sm:text-xs text-slate-500 font-medium">
                 / {displayDuration}
               </span>
             </div>
 
             {hasMultiplePlans && (
-              <span className="text-[10px] font-semibold text-[#080B0F] bg-[#F3F4F6] px-1.5 py-0.5 rounded-sm">
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/60">
                 خطط متعددة
               </span>
             )}
@@ -118,9 +118,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             id={`view-details-${product.id}`}
             type="button"
             onClick={() => onSelectProduct(product, defaultPlan)}
-            className="w-full py-2 px-2 rounded-xl text-[11px] sm:text-xs font-bold text-[#080B0F] bg-[#F3F4F6] hover:bg-gray-200 transition-colors text-center cursor-pointer border border-[#E5E7EB] active:scale-95 flex items-center justify-center gap-1"
+            className="w-full py-2 px-2 rounded-xl text-[11px] sm:text-xs font-bold text-slate-800 bg-[#F1F5F9] hover:bg-slate-200 transition-colors text-center cursor-pointer border border-slate-200 active:scale-95 flex items-center justify-center gap-1"
           >
-            <Eye className="w-3 h-3 text-[#6B7280]" />
+            <Eye className="w-3 h-3 text-slate-500" />
             <span>التفاصيل</span>
           </button>
 
@@ -136,8 +136,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             }}
             className={`w-full py-2 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 ${
               isAvailable
-                ? 'bg-[#FF3B30] text-white hover:bg-[#E02D22] shadow-xs shadow-[#FF3B30]/20'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                ? 'bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white hover:opacity-95 shadow-sm shadow-blue-500/20'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
             }`}
           >
             {isAvailable ? (

@@ -272,7 +272,7 @@ function MainStorefront() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#080B0F] selection:bg-[#FF3B30]/15 selection:text-[#FF3B30] font-sans" dir="rtl">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-[#3B82F6]/15 selection:text-[#3B82F6] font-sans" dir="rtl">
       {/* Sticky Navigation */}
       <Navbar
         settings={settings}
@@ -328,16 +328,16 @@ function MainStorefront() {
 
       {/* Order Creation Failure Toast */}
       {orderErrorMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] bg-[#080B0F]/95 border border-[#FF3B30]/60 text-white p-4 rounded-xl shadow-2xl backdrop-blur-md flex items-start gap-3 animate-in fade-in slide-in-from-bottom-5">
-          <AlertCircle className="w-5 h-5 text-[#FF3B30] shrink-0 mt-0.5" />
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] bg-[#0F172A]/95 border border-red-500/50 text-white p-4 rounded-xl shadow-2xl backdrop-blur-md flex items-start gap-3 animate-in fade-in slide-in-from-bottom-5">
+          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1 text-xs leading-relaxed">
-            <span className="font-bold block mb-0.5 text-[#FF6B6B]">خطأ في تسجيل الطلب</span>
-            <span className="text-gray-200">{orderErrorMessage}</span>
+            <span className="font-bold block mb-0.5 text-red-300">خطأ في تسجيل الطلب</span>
+            <span className="text-slate-200">{orderErrorMessage}</span>
           </div>
           <button
             type="button"
             onClick={() => setOrderErrorMessage(null)}
-            className="text-gray-400 hover:text-white p-1"
+            className="text-slate-400 hover:text-white p-1"
           >
             <X className="w-4 h-4" />
           </button>
@@ -358,10 +358,10 @@ function MainStorefront() {
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
-            className="flex items-center gap-2 px-4 py-3 bg-[#080B0F] hover:bg-black text-white rounded-full shadow-lg border border-gray-800 text-xs font-bold active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-3 bg-[#0F172A] hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 text-xs font-bold active:scale-95 transition-all"
             aria-label="تواصل معنا فوراً"
           >
-            <Send className="w-4 h-4 text-[#FF3B30]" />
+            <Send className="w-4 h-4 text-[#22D3EE]" />
             <span>تواصل معنا</span>
           </button>
         </div>

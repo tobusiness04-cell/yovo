@@ -38,20 +38,28 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           
-          {/* Brand Logo - Yovo Digital Commerce */}
+          {/* Brand Logo - Yovo Digital Subscriptions */}
           <a
             id="brand-logo-link"
             href="#hero"
-            className="flex items-center gap-2 group focus:outline-hidden"
+            className="flex items-center gap-2.5 group focus:outline-hidden"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#080B0F] text-white flex items-center justify-center font-brand font-black text-lg sm:text-xl shadow-xs group-hover:bg-black transition-all">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6] text-white flex items-center justify-center font-brand font-black text-lg sm:text-xl shadow-sm group-hover:scale-105 transition-all">
               <span>Y</span>
             </div>
-            <div className="flex items-center">
-              <span className="font-brand font-black text-xl sm:text-2xl tracking-tight text-[#080B0F] uppercase">
-                {currentSettings.brandName || 'YOVO'}
+            <div className="flex flex-col">
+              <div className="flex items-center">
+                <span className="font-brand font-black text-xl sm:text-2xl tracking-tight leading-none">
+                  <span className="text-[#3B82F6]">Y</span>
+                  <span className="text-[#22D3EE]">o</span>
+                  <span className="text-[#3B82F6]">v</span>
+                  <span className="text-[#8B5CF6]">o</span>
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22D3EE] mr-1 animate-pulse" />
+              </div>
+              <span className="text-[9px] font-semibold text-slate-400 font-brand tracking-normal mt-0.5 hidden sm:block">
+                Digital Subscriptions
               </span>
-              <span className="w-2 h-2 rounded-full bg-[#FF3B30] mr-0.5 animate-pulse" />
             </div>
           </a>
 
@@ -61,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <a
                 key={link.href}
                 href={link.href}
-                className="text-xs sm:text-sm font-semibold text-[#6B7280] hover:text-[#080B0F] transition-colors relative py-1 hover:after:w-full after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-[2px] after:bg-[#FF3B30] after:transition-all"
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#3B82F6] transition-colors relative py-1 hover:after:w-full after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-[#3B82F6] after:to-[#8B5CF6] after:transition-all"
               >
                 {link.label}
               </a>
@@ -74,16 +82,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-contact-btn"
               type="button"
               onClick={onOpenContact}
-              className="text-xs font-bold px-3.5 py-2 text-[#080B0F] bg-[#F3F4F6] hover:bg-gray-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="text-xs font-bold px-3.5 py-2 text-slate-800 bg-[#F1F5F9] hover:bg-slate-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
-              <Instagram className="w-3.5 h-3.5 text-[#FF3B30]" />
+              <Instagram className="w-3.5 h-3.5 text-[#8B5CF6]" />
               <span>تواصل معنا</span>
             </button>
 
             <a
               id="desktop-cta-products"
               href="#products"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#FF3B30] hover:bg-[#E02D22] shadow-xs shadow-[#FF3B30]/20 transition-all duration-200 active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 shadow-md shadow-blue-500/20 transition-all duration-200 active:scale-95"
             >
               <Sparkles className="w-3.5 h-3.5 text-white/90" />
               <span>الاشتراكات</span>
@@ -96,16 +104,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenContact}
-              className="p-2 text-[#080B0F] hover:text-[#FF3B30] bg-[#F3F4F6] rounded-xl transition-colors"
+              className="p-2 text-slate-700 hover:text-[#3B82F6] bg-[#F1F5F9] rounded-xl transition-colors"
               aria-label="تواصل"
             >
-              <Instagram className="w-4 h-4 text-[#FF3B30]" />
+              <Instagram className="w-4 h-4 text-[#8B5CF6]" />
             </button>
 
             <a
               id="mobile-quick-cta"
               href="#products"
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#FF3B30] shadow-xs active:scale-95 transition-transform"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] shadow-sm active:scale-95 transition-transform"
             >
               الاشتراكات
             </a>
@@ -114,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="mobile-menu-toggle"
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-1.5 text-[#080B0F] hover:bg-[#F3F4F6] rounded-xl transition-colors"
+              className="p-1.5 text-slate-800 hover:bg-[#F1F5F9] rounded-xl transition-colors"
               aria-label="قائمة التصفح"
             >
               {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -136,10 +144,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={link.href}
                 href={link.href}
                 onClick={closeMobileMenu}
-                className="text-xs sm:text-sm font-bold text-[#080B0F] hover:text-[#FF3B30] py-2 border-b border-[#F3F4F6] transition-colors flex items-center justify-between"
+                className="text-xs sm:text-sm font-bold text-slate-800 hover:text-[#3B82F6] py-2 border-b border-slate-100 transition-colors flex items-center justify-between"
               >
                 <span>{link.label}</span>
-                <ArrowUpLeft className="w-3.5 h-3.5 text-[#6B7280]" />
+                <ArrowUpLeft className="w-3.5 h-3.5 text-slate-400" />
               </a>
             ))}
 
@@ -148,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="mobile-menu-explore-btn"
                 href="#products"
                 onClick={closeMobileMenu}
-                className="w-full text-center py-2.5 rounded-xl font-bold text-xs text-white bg-[#FF3B30] hover:bg-[#E02D22] shadow-xs"
+                className="w-full text-center py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 shadow-sm"
               >
                 تصفح جميع الاشتراكات
               </a>
@@ -159,9 +167,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   closeMobileMenu();
                   onOpenContact();
                 }}
-                className="w-full text-center py-2.5 rounded-xl font-bold text-xs text-[#080B0F] bg-[#F3F4F6] hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
+                className="w-full text-center py-2.5 rounded-xl font-bold text-xs text-slate-800 bg-[#F1F5F9] hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5"
               >
-                <Instagram className="w-3.5 h-3.5 text-[#FF3B30]" />
+                <Instagram className="w-3.5 h-3.5 text-[#8B5CF6]" />
                 <span>تواصل معنا عبر Instagram</span>
               </button>
             </div>

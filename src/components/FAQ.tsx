@@ -14,22 +14,22 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
   };
 
   return (
-    <section id="faq" className="py-14 sm:py-20 bg-[#F3F4F6]/50 border-b border-[#E5E7EB]">
+    <section id="faq" className="py-14 sm:py-20 bg-[#F1F5F9]/50 border-b border-slate-200">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#080B0F] text-xs font-bold mb-3 border border-[#E5E7EB]">
-            <HelpCircle className="w-3.5 h-3.5 text-[#FF3B30]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-slate-800 text-xs font-bold mb-3 border border-slate-200 shadow-2xs">
+            <HelpCircle className="w-3.5 h-3.5 text-[#8B5CF6]" />
             <span>الأسئلة الشائعة حول المتجر</span>
           </div>
           <h2
             id="faq-section-title"
-            className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#080B0F] tracking-tight"
+            className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight"
           >
             الأسئلة المتكررة
           </h2>
-          <p className="text-sm text-[#6B7280] mt-2 font-normal">
+          <p className="text-sm text-slate-500 mt-2 font-normal">
             إجابات واضحة ومباشرة حول الاشتراكات، التفعيل، وطرق الدفع
           </p>
         </div>
@@ -42,24 +42,24 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
               <div
                 key={item.id}
                 id={`faq-item-${item.id}`}
-                className={`bg-white rounded-2xl border transition-all duration-200 shadow-xs ${
-                  isOpen ? 'border-[#080B0F] ring-1 ring-[#080B0F]/10' : 'border-[#E5E7EB] hover:border-gray-400'
+                className={`bg-white rounded-2xl border transition-all duration-200 shadow-2xs ${
+                  isOpen ? 'border-[#3B82F6] ring-1 ring-[#3B82F6]/25' : 'border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => toggleFAQ(item.id)}
-                  className="w-full p-5 text-right flex items-center justify-between gap-4 hover:bg-gray-50/50 transition-colors focus:outline-hidden cursor-pointer"
+                  className="w-full p-5 text-right flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors focus:outline-hidden cursor-pointer"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-sm sm:text-base font-bold text-[#080B0F] leading-snug">
+                  <span className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
                     {item.question}
                   </span>
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 ${
                       isOpen
-                        ? 'rotate-180 bg-[#080B0F] text-white shadow-xs'
-                        : 'bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB]'
+                        ? 'rotate-180 bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white shadow-xs'
+                        : 'bg-[#F1F5F9] text-slate-500 border border-slate-200'
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -67,7 +67,7 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-[#6B7280] leading-relaxed border-t border-gray-100 animate-in fade-in font-normal">
+                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 animate-in fade-in font-normal">
                     {item.answer}
                   </div>
                 )}
@@ -77,17 +77,17 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
         </div>
 
         {/* Ask Question Support Box */}
-        <div className="mt-10 p-6 rounded-2xl bg-white border border-[#E5E7EB] text-center flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+        <div className="mt-10 p-6 rounded-2xl bg-white border border-slate-200 text-center flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
           <div className="text-right">
-            <h4 className="text-sm font-bold text-[#080B0F]">عندك سؤال آخر ما لقيتهش هنا؟</h4>
-            <p className="text-xs text-[#6B7280] mt-0.5">راسلنا مباشرة على إنستغرام ونجاوبوك فوراً في أي وقت.</p>
+            <h4 className="text-sm font-bold text-slate-900">عندك سؤال آخر ما لقيتهش هنا؟</h4>
+            <p className="text-xs text-slate-500 mt-0.5">راسلنا مباشرة على إنستغرام ونجاوبوك فوراً في أي وقت.</p>
           </div>
           <button
             type="button"
             onClick={onOpenContact}
-            className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#080B0F] hover:bg-black transition-all flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
           >
-            <Send className="w-4 h-4 text-[#FF3B30]" />
+            <Send className="w-4 h-4 text-white" />
             <span>اسألنا على Instagram</span>
           </button>
         </div>

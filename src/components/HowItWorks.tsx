@@ -30,22 +30,22 @@ export const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-14 sm:py-20 bg-white border-b border-[#E5E7EB]">
+    <section id="how-it-works" className="py-14 sm:py-20 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3F4F6] text-[#080B0F] text-xs font-bold mb-3 border border-[#E5E7EB]">
-            <span className="w-2 h-2 rounded-full bg-[#FF3B30]"></span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-slate-800 text-xs font-bold mb-3 border border-slate-200">
+            <span className="w-2 h-2 rounded-full bg-[#22D3EE]"></span>
             <span>خطوات بسيطة وسريعة</span>
           </div>
           <h2
             id="how-it-works-title"
-            className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#080B0F] tracking-tight"
+            className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight"
           >
             كيفاش تطلب اشتراكك في 4 خطوات؟
           </h2>
-          <p className="text-sm text-[#6B7280] mt-2 font-normal">
+          <p className="text-sm text-slate-500 mt-2 font-normal">
             عملية طلب سهلة وبسيطة وسريعة بدون أي تعقيدات
           </p>
         </div>
@@ -54,32 +54,40 @@ export const HowItWorks: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative">
           {steps.map((step, idx) => {
             const Icon = step.icon;
+            const stepColors = [
+              { bg: 'bg-[#3B82F6]', text: 'text-white', iconText: 'text-[#3B82F6]' },
+              { bg: 'bg-[#22D3EE]', text: 'text-slate-950', iconText: 'text-[#22D3EE]' },
+              { bg: 'bg-[#8B5CF6]', text: 'text-white', iconText: 'text-[#8B5CF6]' },
+              { bg: 'bg-[#10B981]', text: 'text-white', iconText: 'text-[#10B981]' },
+            ];
+            const color = stepColors[idx % stepColors.length];
+
             return (
               <div
                 key={step.number}
                 id={`step-card-${step.number}`}
-                className="relative bg-[#F3F4F6] hover:bg-gray-100 rounded-2xl p-6 border border-[#E5E7EB] hover:border-[#080B0F] transition-all flex flex-col justify-between yovo-card-hover"
+                className="relative bg-[#F1F5F9] hover:bg-slate-100 rounded-2xl p-6 border border-slate-200 hover:border-[#3B82F6] transition-all flex flex-col justify-between yovo-card-hover"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="w-10 h-10 rounded-xl bg-[#080B0F] text-white font-brand font-black text-sm flex items-center justify-center shadow-xs">
+                    <span className={`w-10 h-10 rounded-xl ${color.bg} ${color.text} font-brand font-black text-sm flex items-center justify-center shadow-xs`}>
                       {step.number}
                     </span>
-                    <div className="p-2.5 rounded-xl bg-white text-[#080B0F] shadow-xs border border-[#E5E7EB]">
-                      <Icon className="w-4 h-4 text-[#FF3B30]" />
+                    <div className="p-2.5 rounded-xl bg-white shadow-2xs border border-slate-200">
+                      <Icon className={`w-4 h-4 ${color.iconText}`} />
                     </div>
                   </div>
 
-                  <h3 className="text-base font-bold text-[#080B0F] mb-1.5">
+                  <h3 className="text-base font-bold text-slate-900 mb-1.5">
                     {step.title}
                   </h3>
 
-                  <p className="text-xs text-[#6B7280] leading-relaxed font-normal">
+                  <p className="text-xs text-slate-500 leading-relaxed font-normal">
                     {step.description}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 text-[11px] font-bold text-[#FF3B30] border-t border-[#E5E7EB]">
+                <div className="mt-5 pt-3 text-[11px] font-bold text-[#3B82F6] border-t border-slate-200">
                   خطوة {idx + 1} من 4
                 </div>
               </div>

@@ -1,6 +1,6 @@
 {
   "name": "Yovo",
-  "description": "متجر اشتراكات رقمية وخدمات بريميوم في الجزائر بأسعار ومدد مرنة",
+  "description": "Yovo متجر اشتراكات رقمية في الجزائر. اشتراكات Canva Pro وCapCut Pro وخدمات رقمية أخرى.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

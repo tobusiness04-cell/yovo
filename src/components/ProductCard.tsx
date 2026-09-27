@@ -33,8 +33,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       id={`product-card-${product.id}`}
-      className={`group relative bg-white rounded-2xl border border-slate-200 transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden yovo-card-hover hover:border-[#3B82F6] hover:shadow-xl hover:shadow-blue-500/10 ${
-        product.popular ? 'ring-1 ring-[#3B82F6]/20' : ''
+      className={`group relative bg-white rounded-2xl border border-slate-200 transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden yovo-card-hover hover:border-[#006633] hover:shadow-xl hover:shadow-[#006633]/10 ${
+        product.popular ? 'ring-1 ring-[#006633]/25' : ''
       } ${!isAvailable ? 'opacity-85' : ''}`}
     >
       {/* Clickable Header & Image Container */}
@@ -61,13 +61,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   غير متوفر
                 </span>
               ) : product.popular ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FACC15] text-slate-950 text-[10px] font-black shadow-xs">
-                  <Sparkles className="w-3 h-3 text-slate-900" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#6cff76] text-[#003319] text-[10px] font-black shadow-xs">
+                  <Sparkles className="w-3 h-3 text-[#003319]" />
                   الأكثر طلباً
                 </span>
               ) : product.activationTime ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-medium backdrop-blur-xs">
-                  <Clock className="w-2.5 h-2.5 text-[#22D3EE]" />
+                  <Clock className="w-2.5 h-2.5 text-[#6cff76]" />
                   سريع
                 </span>
               ) : null}
@@ -78,7 +78,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Card Body Info */}
         <div className="p-3.5 sm:p-4 text-right">
           {/* Product Name */}
-          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug truncate group-hover:text-[#3B82F6] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug truncate group-hover:text-[#006633] transition-colors">
             {product.name}
           </h3>
 
@@ -102,7 +102,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
 
             {hasMultiplePlans && (
-              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/60">
+              <span className="text-[10px] font-bold text-[#006633] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
                 خطط متعددة
               </span>
             )}
@@ -136,7 +136,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             }}
             className={`w-full py-2 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 ${
               isAvailable
-                ? 'bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white hover:opacity-95 shadow-sm shadow-blue-500/20'
+                ? 'bg-gradient-to-r from-[#006633] to-[#008844] text-white hover:opacity-95 shadow-sm shadow-[#006633]/20'
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
             }`}
           >

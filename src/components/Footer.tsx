@@ -14,15 +14,15 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
   const enabledPlatforms = getEnabledSocialPlatforms(currentSettings);
 
   return (
-    <footer id="footer" className="bg-[#0F172A] text-white border-t border-slate-800 pt-14 pb-12">
+    <footer id="footer" className="bg-[#071E12] text-white border-t border-emerald-950/80 pt-14 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-800">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-emerald-900/40">
           
           {/* Brand & Mission Column */}
           <div className="md:col-span-6">
             <a href="#hero" className="flex items-center gap-2.5 mb-4 inline-flex group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6] text-white flex items-center justify-center font-brand font-black text-xl shadow-xs group-hover:scale-105 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#006633] via-[#008040] to-[#6cff76] text-white flex items-center justify-center font-brand font-black text-xl shadow-xs group-hover:scale-105 transition-all">
                 Y
               </div>
               <div className="flex flex-col">
@@ -30,15 +30,15 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
                   <span className="font-brand font-black text-2xl text-white tracking-tight leading-none uppercase">
                     {currentSettings.brandName}
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-[#22D3EE] animate-pulse"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#6cff76] animate-pulse"></span>
                 </div>
-                <span className="text-[11px] font-medium text-slate-400 tracking-wide mt-0.5">
+                <span className="text-[11px] font-medium text-emerald-200/70 tracking-wide mt-0.5">
                   متجر اشتراكات رقمية
                 </span>
               </div>
             </a>
 
-            <p className="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed mb-6 font-normal">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-sm leading-relaxed mb-6 font-normal">
               {currentSettings.footerText}
             </p>
 
@@ -58,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
                       rel="noopener noreferrer"
                       className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
                         isPrimary
-                          ? 'bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white border-transparent hover:opacity-95 shadow-md shadow-blue-500/20'
+                          ? 'bg-[#006633] hover:bg-[#005229] text-white border-transparent shadow-md shadow-[#006633]/25'
                           : 'bg-white/10 text-white hover:bg-white/15 border-white/10'
                       }`}
                     >
@@ -79,27 +79,27 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
             </h4>
             <ul className="space-y-2.5 text-xs text-gray-400">
               <li>
-                <a href="#hero" className="hover:text-white transition-colors inline-block font-semibold">
+                <a href="#hero" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
                   الرئيسية
                 </a>
               </li>
               <li>
-                <a href="#products" className="hover:text-white transition-colors inline-block font-semibold">
+                <a href="#products" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
                   الاشتراكات المتوفرة
                 </a>
               </li>
               <li>
-                <a href="#why" className="hover:text-white transition-colors inline-block font-semibold">
+                <a href="#why" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
                   علاش Yovo؟
                 </a>
               </li>
               <li>
-                <a href="#how-it-works" className="hover:text-white transition-colors inline-block font-semibold">
+                <a href="#how-it-works" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
                   كيفاش تطلب؟
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition-colors inline-block font-semibold">
+                <a href="#faq" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
                   الأسئلة الشائعة
                 </a>
               </li>
@@ -122,7 +122,7 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
                     href={getOrderPlatformUrl(platform.url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#3B82F6] hover:text-[#22D3EE] hover:underline font-mono text-[11px] inline-flex items-center gap-0.5 font-bold transition-colors"
+                    className="text-[#6cff76] hover:text-white hover:underline font-mono text-[11px] inline-flex items-center gap-0.5 font-bold transition-colors"
                   >
                     <span>{platform.handleOrDisplay || platform.name}</span>
                     <ArrowUpLeft className="w-2.5 h-2.5" />

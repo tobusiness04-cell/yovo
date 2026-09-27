@@ -18,7 +18,7 @@ export const WhyYovo: React.FC = () => {
       desc: 'تفعيل خلال دقائق معدودة بعد تأكيد طلبك مع إرشادات مبسطة للبدء في استخدام اشتراكك فوراً.',
       icon: Zap,
       badge: '15 - 30 دقيقة',
-      accentColor: 'text-[#3B82F6] bg-blue-50 border-blue-200',
+      accentColor: 'text-[#006633] bg-emerald-50 border-emerald-200',
     },
     {
       id: 'benefit-support',
@@ -26,7 +26,7 @@ export const WhyYovo: React.FC = () => {
       desc: 'فريق دعم متواجد للإجابة على استفساراتك ومساعدتك خطوة بخطوة في أي وقت.',
       icon: Headphones,
       badge: 'متابعة مباشرة',
-      accentColor: 'text-[#8B5CF6] bg-purple-50 border-purple-200',
+      accentColor: 'text-[#006633] bg-emerald-50 border-emerald-200',
     },
     {
       id: 'benefit-guarantee',
@@ -34,7 +34,7 @@ export const WhyYovo: React.FC = () => {
       desc: 'شروط ومدة الضمان واضحة ومحددة لكل أداة على حدة قبل الطلب، لتخدم وأنت مطمئن ومرتاح البال.',
       icon: ShieldCheck,
       badge: 'ضمان معلن',
-      accentColor: 'text-[#10B981] bg-emerald-50 border-emerald-200',
+      accentColor: 'text-[#006633] bg-emerald-50 border-emerald-200',
     },
   ];
 
@@ -45,7 +45,7 @@ export const WhyYovo: React.FC = () => {
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-slate-800 text-xs font-bold mb-3 border border-slate-200 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-[#22D3EE]"></span>
+            <span className="w-2 h-2 rounded-full bg-[#6cff76]"></span>
             <span>مميزات التسوق مع Yovo</span>
           </div>
           <h2
@@ -67,7 +67,7 @@ export const WhyYovo: React.FC = () => {
               <div
                 key={b.id}
                 id={`benefit-card-${b.id}`}
-                className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:border-[#3B82F6] hover:shadow-lg transition-all flex flex-col justify-between yovo-card-hover"
+                className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:border-[#006633] hover:shadow-lg transition-all flex flex-col justify-between yovo-card-hover"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -89,7 +89,7 @@ export const WhyYovo: React.FC = () => {
                 </div>
 
                 <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-800 font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#006633]" />
                   <span>خدمة موثوقة ومضمونة</span>
                 </div>
               </div>
@@ -99,7 +99,7 @@ export const WhyYovo: React.FC = () => {
 
         {/* Transparent Guarantee Callout */}
         <div className="mt-8 p-4 rounded-xl bg-white border border-slate-200 max-w-3xl mx-auto flex items-start gap-3 text-right shadow-2xs">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6] text-white flex items-center justify-center shrink-0 mt-0.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#006633] via-[#008040] to-[#6cff76] text-white flex items-center justify-center shrink-0 mt-0.5">
             <ShieldCheck className="w-4 h-4 text-white" />
           </div>
           <div className="text-xs text-slate-600 leading-relaxed">

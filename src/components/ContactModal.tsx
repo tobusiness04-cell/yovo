@@ -37,7 +37,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, set
           <X className="w-5 h-5" />
         </button>
 
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6] text-white flex items-center justify-center mb-4 shadow-md shadow-blue-500/20">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#006633] via-[#008040] to-[#6cff76] text-white flex items-center justify-center mb-4 shadow-md shadow-[#006633]/25">
           <Send className="w-5 h-5 text-white" />
         </div>
 
@@ -64,7 +64,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, set
                   rel="noopener noreferrer"
                   className={`w-full p-4 rounded-2xl flex items-center justify-between group transition-all border ${
                     isPrimary
-                      ? 'bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white hover:opacity-95 border-transparent shadow-md shadow-blue-500/20'
+                      ? 'bg-gradient-to-r from-[#006633] to-[#008844] text-white hover:opacity-95 border-transparent shadow-md shadow-[#006633]/20'
                       : 'bg-[#F1F5F9] hover:bg-slate-200 text-slate-900 border-slate-200'
                   }`}
                 >

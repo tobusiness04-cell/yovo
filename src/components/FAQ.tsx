@@ -20,7 +20,7 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-slate-800 text-xs font-bold mb-3 border border-slate-200 shadow-2xs">
-            <HelpCircle className="w-3.5 h-3.5 text-[#8B5CF6]" />
+            <HelpCircle className="w-3.5 h-3.5 text-[#006633]" />
             <span>الأسئلة الشائعة حول المتجر</span>
           </div>
           <h2
@@ -43,7 +43,7 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
                 key={item.id}
                 id={`faq-item-${item.id}`}
                 className={`bg-white rounded-2xl border transition-all duration-200 shadow-2xs ${
-                  isOpen ? 'border-[#3B82F6] ring-1 ring-[#3B82F6]/25' : 'border-slate-200 hover:border-slate-300'
+                  isOpen ? 'border-[#006633] ring-1 ring-[#006633]/25' : 'border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <button
@@ -58,7 +58,7 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 ${
                       isOpen
-                        ? 'rotate-180 bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white shadow-xs'
+                        ? 'rotate-180 bg-gradient-to-r from-[#006633] to-[#008844] text-white shadow-xs'
                         : 'bg-[#F1F5F9] text-slate-500 border border-slate-200'
                     }`}
                   >
@@ -85,9 +85,9 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
           <button
             type="button"
             onClick={onOpenContact}
-            className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:opacity-95 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#006633] to-[#008844] hover:opacity-95 shadow-md shadow-[#006633]/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
           >
-            <Send className="w-4 h-4 text-white" />
+            <Send className="w-4 h-4 text-[#6cff76]" />
             <span>اسألنا على Instagram</span>
           </button>
         </div>

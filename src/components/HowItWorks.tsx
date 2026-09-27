@@ -36,7 +36,7 @@ export const HowItWorks: React.FC = () => {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-slate-800 text-xs font-bold mb-3 border border-slate-200">
-            <span className="w-2 h-2 rounded-full bg-[#22D3EE]"></span>
+            <span className="w-2 h-2 rounded-full bg-[#6cff76]"></span>
             <span>خطوات بسيطة وسريعة</span>
           </div>
           <h2
@@ -55,10 +55,10 @@ export const HowItWorks: React.FC = () => {
           {steps.map((step, idx) => {
             const Icon = step.icon;
             const stepColors = [
-              { bg: 'bg-[#3B82F6]', text: 'text-white', iconText: 'text-[#3B82F6]' },
-              { bg: 'bg-[#22D3EE]', text: 'text-slate-950', iconText: 'text-[#22D3EE]' },
-              { bg: 'bg-[#8B5CF6]', text: 'text-white', iconText: 'text-[#8B5CF6]' },
-              { bg: 'bg-[#10B981]', text: 'text-white', iconText: 'text-[#10B981]' },
+              { bg: 'bg-[#006633]', text: 'text-white', iconText: 'text-[#006633]' },
+              { bg: 'bg-[#6cff76]', text: 'text-[#003319]', iconText: 'text-[#006633]' },
+              { bg: 'bg-[#006633]', text: 'text-white', iconText: 'text-[#006633]' },
+              { bg: 'bg-[#008844]', text: 'text-white', iconText: 'text-[#008844]' },
             ];
             const color = stepColors[idx % stepColors.length];
 
@@ -66,7 +66,7 @@ export const HowItWorks: React.FC = () => {
               <div
                 key={step.number}
                 id={`step-card-${step.number}`}
-                className="relative bg-[#F1F5F9] hover:bg-slate-100 rounded-2xl p-6 border border-slate-200 hover:border-[#3B82F6] transition-all flex flex-col justify-between yovo-card-hover"
+                className="relative bg-[#F1F5F9] hover:bg-slate-100 rounded-2xl p-6 border border-slate-200 hover:border-[#006633] transition-all flex flex-col justify-between yovo-card-hover"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -87,7 +87,7 @@ export const HowItWorks: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 text-[11px] font-bold text-[#3B82F6] border-t border-slate-200">
+                <div className="mt-5 pt-3 text-[11px] font-bold text-[#006633] border-t border-slate-200">
                   خطوة {idx + 1} من 4
                 </div>
               </div>

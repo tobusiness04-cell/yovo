@@ -272,7 +272,7 @@ function MainStorefront() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-[#3B82F6]/15 selection:text-[#3B82F6] font-sans" dir="rtl">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-[#6cff76]/30 selection:text-[#004d26] font-sans" dir="rtl">
       {/* Sticky Navigation */}
       <Navbar
         settings={settings}
@@ -358,10 +358,10 @@ function MainStorefront() {
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
-            className="flex items-center gap-2 px-4 py-3 bg-[#0F172A] hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 text-xs font-bold active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-3 bg-[#006633] hover:bg-[#005229] text-white rounded-full shadow-lg shadow-[#006633]/25 border border-emerald-600/50 text-xs font-bold active:scale-95 transition-all"
             aria-label="تواصل معنا فوراً"
           >
-            <Send className="w-4 h-4 text-[#22D3EE]" />
+            <Send className="w-4 h-4 text-[#6cff76]" />
             <span>تواصل معنا</span>
           </button>
         </div>

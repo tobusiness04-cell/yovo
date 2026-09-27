@@ -10,7 +10,7 @@ export const Testimonials: React.FC = () => {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-slate-800 text-xs font-bold mb-3 border border-slate-200">
-            <span className="w-2 h-2 rounded-full bg-[#22D3EE]"></span>
+            <span className="w-2 h-2 rounded-full bg-[#6cff76]"></span>
             <span>آراء وتجارب العملاء</span>
           </div>
           <h2
@@ -30,12 +30,12 @@ export const Testimonials: React.FC = () => {
             <div
               key={item.id}
               id={`testimonial-${item.id}`}
-              className="bg-[#F1F5F9] hover:bg-slate-100 rounded-2xl p-6 border border-slate-200 hover:border-[#3B82F6] flex flex-col justify-between transition-all yovo-card-hover"
+              className="bg-[#F1F5F9] hover:bg-slate-100 rounded-2xl p-6 border border-slate-200 hover:border-[#006633] flex flex-col justify-between transition-all yovo-card-hover"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-10 h-10 rounded-xl bg-white shadow-2xs border border-slate-200 flex items-center justify-center text-slate-900">
-                    <MessageSquareQuote className="w-5 h-5 text-[#3B82F6]" />
+                    <MessageSquareQuote className="w-5 h-5 text-[#006633]" />
                   </div>
                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white text-slate-900 border border-slate-200">
                     {item.service}
@@ -72,7 +72,7 @@ export const Testimonials: React.FC = () => {
         {/* Clear Transparency Tag */}
         <div className="mt-8 text-center">
           <p className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-medium bg-[#F1F5F9] border border-slate-200 px-3.5 py-1.5 rounded-full">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#22D3EE]" />
+            <ShieldAlert className="w-3.5 h-3.5 text-[#006633]" />
             <span>نلتزم بالشفافية الكاملة: يمكنك دائماً التحقق وسؤال فريقنا على أي تفاصيل عبر رسائلنا المباشرة.</span>
           </p>
         </div>

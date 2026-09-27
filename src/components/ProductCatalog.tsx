@@ -56,7 +56,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-slate-800 text-[11px] sm:text-xs font-bold mb-2 border border-slate-200">
-              <span className="w-2 h-2 rounded-full bg-[#22D3EE]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#6cff76]"></span>
               <span>الكتالوج الرقمي</span>
               <span className="text-slate-400">({filteredProducts.length} اشتراك)</span>
             </div>
@@ -80,7 +80,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ابحث عن اشتراك (Canva, CapCut, ChatGPT...)"
-              className="w-full pl-9 pr-10 py-2.5 text-xs bg-[#F1F5F9] hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-hidden focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/15 transition-all placeholder:text-slate-400"
+              className="w-full pl-9 pr-10 py-2.5 text-xs bg-[#F1F5F9] hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-hidden focus:border-[#006633] focus:ring-2 focus:ring-[#006633]/20 transition-all placeholder:text-slate-400"
             />
             {searchQuery && (
               <button
@@ -111,7 +111,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   onClick={() => setSelectedCategory(category)}
                   className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer active:scale-95 ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white shadow-sm shadow-blue-500/20'
+                      ? 'bg-gradient-to-r from-[#006633] to-[#008844] text-white shadow-sm shadow-[#006633]/25'
                       : 'bg-[#F1F5F9] text-slate-700 hover:bg-slate-200 border border-slate-200/80'
                   }`}
                 >
@@ -162,7 +162,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               <button
                 type="button"
                 onClick={onRetry}
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#006633] to-[#008844] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>إعادة المحاولة</span>
@@ -176,7 +176,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             className="text-center py-16 px-6 bg-[#F1F5F9] rounded-2xl border border-dashed border-slate-200 max-w-lg mx-auto"
           >
             <div className="w-12 h-12 rounded-xl bg-white text-slate-900 flex items-center justify-center mx-auto mb-3 shadow-xs">
-              <PackageOpen className="w-6 h-6 text-[#3B82F6]" />
+              <PackageOpen className="w-6 h-6 text-[#006633]" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 mb-1">لا توجد اشتراكات مضافة في المتجر حالياً</h3>
             <p className="text-xs text-slate-500 leading-relaxed">

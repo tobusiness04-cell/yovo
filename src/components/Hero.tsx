@@ -20,12 +20,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
   );
 
   return (
-    <section id="hero" className="relative bg-gradient-to-b from-[#F0F9FF] via-white to-[#F8FAFC] text-slate-900 py-8 sm:py-14 overflow-hidden border-b border-slate-200">
+    <section id="hero" className="relative bg-gradient-to-b from-[#F0FDF4] via-white to-[#F8FAFC] text-slate-900 py-8 sm:py-14 overflow-hidden border-b border-slate-200">
       {/* Subtle modern abstract background accents */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute -top-20 right-1/4 w-96 h-96 bg-[#22D3EE]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 -left-20 w-80 h-80 bg-[#8B5CF6]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 right-10 w-80 h-80 bg-[#3B82F6]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 right-1/4 w-96 h-96 bg-[#6cff76]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 -left-20 w-80 h-80 bg-[#006633]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 right-10 w-80 h-80 bg-[#6cff76]/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
@@ -37,9 +37,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
             {/* Store Badge */}
             <div
               id="hero-badge"
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-blue-200/80 text-[11px] sm:text-xs font-semibold mb-3.5 shadow-2xs backdrop-blur-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-emerald-200/80 text-[11px] sm:text-xs font-semibold mb-3.5 shadow-2xs backdrop-blur-xs"
             >
-              <span className="w-2 h-2 rounded-full bg-[#22D3EE] animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-[#6cff76] animate-pulse" />
               <span className="text-slate-900 font-bold">متجر Yovo</span>
               <span className="text-slate-300">|</span>
               <span className="text-slate-600 font-medium">اشتراكات رقمية مضمونة 🇩🇿</span>
@@ -51,7 +51,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
               className="text-2xl sm:text-4xl lg:text-[44px] font-black text-slate-950 tracking-tight leading-[1.25] mb-3 sm:mb-4"
             >
               كل أدواتك الرقمية الأصلية، <br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-[#3B82F6] via-[#22D3EE] to-[#8B5CF6] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#006633] via-[#008040] to-[#10B981] bg-clip-text text-transparent">
                 في مكان واحد موثوق وبسيط.
               </span>
             </h1>
@@ -69,9 +69,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
               <a
                 id="hero-primary-cta"
                 href="#products"
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 rounded-xl text-xs sm:text-sm font-black text-slate-950 bg-[#FACC15] hover:bg-[#EAB308] shadow-md shadow-yellow-500/20 transition-all active:scale-95"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 rounded-xl text-xs sm:text-sm font-black text-[#003319] bg-[#6cff76] hover:bg-[#5ae664] shadow-md shadow-[#6cff76]/30 transition-all active:scale-95"
               >
-                <Sparkles className="w-4 h-4 text-slate-900" />
+                <Sparkles className="w-4 h-4 text-[#003319]" />
                 <span>اكتشف المنتجات</span>
                 <ArrowUpLeft className="w-4 h-4" />
               </a>
@@ -80,9 +80,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                 id="hero-secondary-cta"
                 type="button"
                 onClick={onOpenContact}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-xs sm:text-sm font-bold text-slate-800 bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-blue-400 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-xs sm:text-sm font-bold text-slate-800 bg-white hover:bg-emerald-50/50 border-2 border-slate-200 hover:border-[#006633] transition-all active:scale-95 cursor-pointer shadow-2xs"
               >
-                <Send className="w-4 h-4 text-[#8B5CF6]" />
+                <Send className="w-4 h-4 text-[#006633]" />
                 <span>تواصل معنا</span>
               </button>
             </div>
@@ -90,19 +90,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
             {/* 4 Pillars Grid (Matching the brand identity pills) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 pt-4 border-t border-slate-200/80 w-full max-w-xl text-right text-[11px] sm:text-xs">
               <div className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-                <Zap className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
+                <Zap className="w-3.5 h-3.5 text-[#006633] shrink-0" />
                 <span className="font-bold text-slate-800">تفعيل سريع</span>
               </div>
               <div className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#006633] shrink-0" />
                 <span className="font-bold text-slate-800">أمان وموثوقية</span>
               </div>
               <div className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-                <Layers className="w-3.5 h-3.5 text-[#8B5CF6] shrink-0" />
+                <Layers className="w-3.5 h-3.5 text-[#006633] shrink-0" />
                 <span className="font-bold text-slate-800">دعم مباشر</span>
               </div>
               <div className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
                 <span className="font-bold text-slate-800">أسعار مناسبة</span>
               </div>
             </div>
@@ -118,7 +118,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                 {/* Visual Header */}
                 <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-3.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6] text-white flex items-center justify-center font-brand font-black text-sm shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#006633] via-[#008040] to-[#6cff76] text-white flex items-center justify-center font-brand font-black text-sm shadow-xs">
                       Y
                     </div>
                     <div>
@@ -126,7 +126,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                       <span className="text-[10px] text-slate-400">تفعيل رسمي ومضمون</span>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
                     متوفر الآن
                   </span>
                 </div>
@@ -137,7 +137,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                   {/* Canva Pro */}
                   <a
                     href="#products"
-                    className="p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-300 transition-all flex items-center justify-between group"
+                    className="p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 hover:border-emerald-300 transition-all flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00C4CC] via-[#0075FF] to-[#7D2AE8] text-white font-bold flex items-center justify-center text-xs shadow-xs">
@@ -146,7 +146,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-bold text-slate-900">{canvaProduct?.name || 'Canva Pro'}</span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold">الأكثر طلباً</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-[#6cff76]/30 text-[#004d26] font-bold">الأكثر طلباً</span>
                         </div>
                         <p className="text-[10px] text-slate-500">تصميم وقوالب بريميوم كاملة</p>
                       </div>
@@ -161,7 +161,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                   {/* CapCut Pro */}
                   <a
                     href="#products"
-                    className="p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-300 transition-all flex items-center justify-between group"
+                    className="p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 hover:border-emerald-300 transition-all flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center text-xs shadow-xs">
@@ -170,7 +170,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-bold text-slate-900">{capcutProduct?.name || 'CapCut Pro'}</span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold">مونتاج</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold">مونتاج</span>
                         </div>
                         <p className="text-[10px] text-slate-500">تأثيرات حصرية وتصدير 4K</p>
                       </div>
@@ -185,7 +185,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
                   {/* ChatGPT Plus */}
                   <a
                     href="#products"
-                    className="p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-300 transition-all flex items-center justify-between group"
+                    className="p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 hover:border-emerald-300 transition-all flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-[#10A37F] text-white font-bold flex items-center justify-center text-xs shadow-xs">
@@ -210,10 +210,10 @@ export const Hero: React.FC<HeroProps> = ({ onOpenContact, products }) => {
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#006633]" />
                     طلب وتفعيل فوري
                   </span>
-                  <span className="font-bold text-[#3B82F6]">ضمان كامل بالدينار</span>
+                  <span className="font-bold text-[#006633]">ضمان كامل بالدينار</span>
                 </div>
 
               </div>

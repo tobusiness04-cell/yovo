@@ -4,26 +4,30 @@
   --font-sans: "Tajawal", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --font-brand: "Plus Jakarta Sans", "Tajawal", system-ui, sans-serif;
 
-  /* Yovo Brand Design System */
-  --color-yovo-blue: #3B82F6;
-  --color-yovo-cyan: #22D3EE;
-  --color-yovo-purple: #8B5CF6;
-  --color-yovo-yellow: #FACC15;
-  --color-yovo-teal: #10B981;
+  /* Yovo Brand Design System - Emerald & Electric Green Palette */
+  --color-yovo-green: #006633;
+  --color-yovo-accent: #6cff76;
+  --color-yovo-blue: #006633;
+  --color-yovo-cyan: #6cff76;
+  --color-yovo-purple: #004d26;
+  --color-yovo-yellow: #6cff76;
+  --color-yovo-teal: #006633;
   --color-yovo-gray: #F1F5F9;
-  --color-yovo-dark: #0F172A;
+  --color-yovo-dark: #071E12;
   --color-yovo-white: #FFFFFF;
   --color-yovo-border: #E2E8F0;
 }
 
 :root {
-  --yovo-blue: #3B82F6;
-  --yovo-cyan: #22D3EE;
-  --yovo-purple: #8B5CF6;
-  --yovo-yellow: #FACC15;
-  --yovo-teal: #10B981;
+  --yovo-primary: #006633;
+  --yovo-accent: #6cff76;
+  --yovo-blue: #006633;
+  --yovo-cyan: #6cff76;
+  --yovo-purple: #004d26;
+  --yovo-yellow: #6cff76;
+  --yovo-teal: #006633;
   --yovo-gray: #F1F5F9;
-  --yovo-dark: #0F172A;
+  --yovo-dark: #071E12;
   --yovo-white: #FFFFFF;
   --yovo-border: #E2E8F0;
 }

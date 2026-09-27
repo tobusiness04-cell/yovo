@@ -82,7 +82,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               {product.category}
             </span>
             {product.popular && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FACC15] text-slate-950 text-xs font-black shadow-xs">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#6cff76] text-[#003319] text-xs font-black shadow-xs">
                 <Sparkles className="w-3.5 h-3.5" />
                 الأكثر طلباً
               </span>
@@ -118,7 +118,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() => setSelectedPlanId(plan.id)}
                       className={`p-2.5 rounded-xl text-center transition-all cursor-pointer border ${
                         isSelected
-                          ? 'border-[#3B82F6] bg-[#3B82F6]/10 text-[#3B82F6] ring-1 ring-[#3B82F6]/30 shadow-xs'
+                          ? 'border-[#006633] bg-[#006633]/10 text-[#006633] ring-1 ring-[#006633]/30 shadow-xs'
                           : isPlanDisabled
                           ? 'border-slate-200 bg-[#F1F5F9] text-slate-400 line-through cursor-not-allowed opacity-60'
                           : 'border-slate-200 bg-[#F1F5F9] text-slate-800 hover:bg-slate-200'
@@ -127,7 +127,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       <span className="block text-xs font-bold">{plan.duration}</span>
                       <span
                         className={`block text-[11px] mt-0.5 font-brand ${
-                          isSelected ? 'text-[#3B82F6] font-bold' : 'text-slate-500'
+                          isSelected ? 'text-[#006633] font-bold' : 'text-slate-500'
                         }`}
                       >
                         {formatPrice(plan.price, product.currency || 'دج')}
@@ -136,8 +136,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         <span
                           className={`inline-block text-[9px] px-1 py-0.2 mt-1 rounded-sm ${
                             isSelected
-                              ? 'bg-[#FACC15] text-slate-950 font-black'
-                              : 'bg-amber-100 text-amber-900 font-bold'
+                              ? 'bg-[#6cff76] text-[#003319] font-black'
+                              : 'bg-emerald-100 text-[#004d26] font-bold'
                           }`}
                         >
                           {plan.note}
@@ -168,7 +168,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <div className="text-left">
                 <span className="text-[10px] text-slate-400 block font-medium">سرعة التفعيل</span>
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-900 mt-0.5">
-                  <Clock className="w-3.5 h-3.5 text-[#22D3EE]" />
+                  <Clock className="w-3.5 h-3.5 text-[#006633]" />
                   {product.activationTime}
                 </span>
               </div>
@@ -184,8 +184,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <div className="space-y-2">
                 {product.features.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-xs text-slate-800">
-                    <div className="w-4 h-4 rounded-full bg-emerald-100 text-[#10B981] flex items-center justify-center shrink-0 mt-0.5">
-                      <Check className="w-3 h-3 text-[#10B981]" />
+                    <div className="w-4 h-4 rounded-full bg-emerald-100 text-[#006633] flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-[#006633]" />
                     </div>
                     <span className="text-slate-800 leading-relaxed">{feature}</span>
                   </div>
@@ -196,8 +196,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
           {/* Guarantee Box */}
           {product.guarantee && (
-            <div className="mb-5 p-3.5 rounded-xl bg-sky-50/60 border border-sky-200/70 flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-[#22D3EE] shrink-0 mt-0.5" />
+            <div className="mb-5 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#006633] shrink-0 mt-0.5" />
               <div className="text-xs text-slate-600">
                 <strong className="text-slate-900 font-bold block mb-0.5">ضمان Yovo المعتمد:</strong>
                 <p className="leading-relaxed">{product.guarantee}</p>
@@ -222,7 +222,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               }}
               className={`w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 isAvailable
-                  ? 'bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] text-white hover:opacity-95 shadow-md shadow-blue-500/20 active:scale-98'
+                  ? 'bg-gradient-to-r from-[#006633] to-[#008844] text-white hover:opacity-95 shadow-md shadow-[#006633]/20 active:scale-98'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >

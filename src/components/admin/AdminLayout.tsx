@@ -98,13 +98,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-[#6cff76] flex items-center justify-center border border-emerald-500/30">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-sm tracking-tight text-white">YOVO</span>
-                <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 text-[10px] font-bold border border-sky-500/30">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-[#6cff76] text-[10px] font-bold border border-emerald-500/30">
                   Store Manager
                 </span>
               </div>
@@ -127,7 +127,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <span className="text-slate-200 font-bold text-[11px] truncate max-w-[150px]">
               {currentUser?.email || 'admin@yovo.dz'}
             </span>
-            <span className="text-sky-400 text-[10px] font-semibold">مسؤول معتمد ✓</span>
+            <span className="text-[#6cff76] text-[10px] font-semibold">مسؤول معتمد ✓</span>
           </div>
 
           <button
@@ -160,16 +160,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       onClick={() => handleNavClick(item.id as AdminTab)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                         isActive
-                          ? 'bg-slate-900 text-white shadow-xs'
+                          ? 'bg-[#006633] text-white shadow-xs'
                           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-[#6cff76]' : 'text-slate-400'}`} />
                         <span>{item.label}</span>
                       </div>
                       {item.badge !== undefined && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 animate-pulse">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#6cff76] text-[#003319] animate-pulse">
                           {item.badge}
                         </span>
                       )}

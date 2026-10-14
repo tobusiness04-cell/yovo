@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowUpLeft, Send, Sparkles } from 'lucide-react';
+import { ArrowUpLeft, Sparkles } from 'lucide-react';
+import { SocialIcon } from './common/SocialIcon';
 
 interface FinalCTAProps {
   onOpenContact: () => void;
@@ -33,7 +34,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenContact }) => {
               className="text-xs sm:text-base text-slate-300 leading-relaxed mb-8 font-normal"
             >
               شوف الاشتراكات المتوفرة وتواصل معنا لمعرفة السعر والمدة والتفاصيل.
-              فريقنا جاهز لتفعيل طلبك والإجابة على كل استفساراتك فوراً.
+              فريقنا جاهز لتفعيل طلبك والإجابة على كل استفساراتك فوراً عبر WhatsApp.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
@@ -52,8 +53,8 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenContact }) => {
                 onClick={onOpenContact}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-white/10 hover:bg-white/15 border border-white/15 transition-all active:scale-98 cursor-pointer"
               >
-                <Send className="w-4 h-4 text-[#6cff76]" />
-                <span>راسلنا عبر Instagram</span>
+                <SocialIcon icon="whatsapp" className="w-4 h-4 text-[#6cff76]" />
+                <span>راسلنا واطلب عبر WhatsApp</span>
               </button>
             </div>
           </div>

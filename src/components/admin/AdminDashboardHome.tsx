@@ -147,7 +147,7 @@ export const AdminDashboardHome: React.FC<AdminDashboardHomeProps> = ({
               لوحة تحكم المتجر والربحية الحقيقية
             </h2>
             <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
-              متابعة الطلبات المبدئية عبر Instagram، تأكيد التحصيلات، تتبع تكاليف الإعلانات والموردين، وحساب الأرباح المحققة بدقة.
+              متابعة الطلبات المبدئية عبر WhatsApp ووسائل التواصل، تأكيد التحصيلات، تتبع تكاليف الإعلانات والموردين، وحساب الأرباح المحققة بدقة.
             </p>
           </div>
 

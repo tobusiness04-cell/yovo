@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ProductCatalog } from './components/ProductCatalog';
@@ -9,17 +9,14 @@ import { Testimonials } from './components/Testimonials';
 import { FAQ } from './components/FAQ';
 import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
-import { ProductModal } from './components/ProductModal';
-import { ContactModal } from './components/ContactModal';
-import { PublicLandingPage } from './components/PublicLandingPage';
-import { AdminApp } from './components/admin/AdminApp';
-import { AdminAuthProvider } from './context/AdminAuthContext';
 import { initialProducts } from './data/products';
 import {
   storeConfig as defaultStoreConfig,
   getPrimaryOrderPlatform,
   getOrderPlatformUrl,
   generateOrderMessage,
+  buildWhatsAppOrderUrl,
+  isWhatsAppPlatform,
 } from './config';
 import { Product, ProductPlan, Category, StoreConfig, LandingPage } from './types';
 import {
@@ -28,6 +25,7 @@ import {
   subscribeStoreSettings,
   subscribeToLandingPages,
   createPendingOrder,
+  defaultCategories,
 } from './services/storeService';
 import { copyTextToClipboard } from './lib/clipboard';
 import {
@@ -36,12 +34,62 @@ import {
 } from './components/common/OrderConfirmationToast';
 import { Send, AlertCircle, X } from 'lucide-react';
 
+// Code-split heavy non-critical and route-specific modules
+const ProductModal = React.lazy(() =>
+  import('./components/ProductModal').then((m) => ({ default: m.ProductModal }))
+);
+const ContactModal = React.lazy(() =>
+  import('./components/ContactModal').then((m) => ({ default: m.ContactModal }))
+);
+const PublicLandingPage = React.lazy(() =>
+  import('./components/PublicLandingPage').then((m) => ({ default: m.PublicLandingPage }))
+);
+const AdminApp = React.lazy(() =>
+  import('./components/admin/AdminApp').then((m) => ({ default: m.AdminApp }))
+);
+const AdminAuthProvider = React.lazy(() =>
+  import('./context/AdminAuthContext').then((m) => ({ default: m.AdminAuthProvider }))
+);
+
 function MainStorefront() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(true);
+  // Stale-While-Revalidate: Instant render from cached/initial data to eliminate FCP & LCP delay
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('yovo_products_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return initialProducts;
+  });
+  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(false);
   const [productsError, setProductsError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [settings, setSettings] = useState<StoreConfig>(defaultStoreConfig);
+  const [categories, setCategories] = useState<Category[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('yovo_categories_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return defaultCategories;
+  });
+  const [settings, setSettings] = useState<StoreConfig>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('yovo_settings_cache');
+        if (cached) {
+          return { ...defaultStoreConfig, ...JSON.parse(cached) };
+        }
+      } catch (e) {}
+    }
+    return defaultStoreConfig;
+  });
   const [landingPages, setLandingPages] = useState<LandingPage[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan | undefined>(undefined);
@@ -191,14 +239,33 @@ function MainStorefront() {
       product.currency || settings.currency
     );
 
-    // Resolve primary order platform dynamically (Instagram or configured primary)
+    // Resolve primary order platform dynamically (WhatsApp or configured primary)
     const primaryPlatform = getPrimaryOrderPlatform(settings);
-    const orderUrl = primaryPlatform ? getOrderPlatformUrl(primaryPlatform.url) : '';
-    const platformName = primaryPlatform?.name || 'Instagram';
-    const platformIcon = primaryPlatform?.icon;
+    const isWhatsApp = isWhatsAppPlatform(primaryPlatform);
 
-    // 2. Copy the generated message to the user's clipboard FIRST
-    // Using Clipboard API directly within the user click gesture
+    const orderUrl = primaryPlatform
+      ? isWhatsApp
+        ? buildWhatsAppOrderUrl(primaryPlatform.url, orderMessage)
+        : getOrderPlatformUrl(primaryPlatform.url)
+      : buildWhatsAppOrderUrl('213549759489', orderMessage);
+
+    const platformName = primaryPlatform?.name || (isWhatsApp ? 'WhatsApp' : 'واتساب');
+    const platformIcon = isWhatsApp ? 'whatsapp' : (primaryPlatform?.icon || 'whatsapp');
+
+    // 2. Open the WhatsApp/order destination immediately within direct user click gesture
+    let windowOpened = false;
+    if (orderUrl) {
+      try {
+        const opened = window.open(orderUrl, '_blank', 'noopener,noreferrer');
+        if (opened) {
+          windowOpened = true;
+        }
+      } catch (err) {
+        console.warn('Direct window.open failed:', err);
+      }
+    }
+
+    // 3. Copy the generated message to the user's clipboard as a backup
     let copied = false;
     try {
       if (
@@ -216,58 +283,63 @@ function MainStorefront() {
       copied = await copyTextToClipboard(orderMessage);
     }
 
-    if (copied) {
-      // 3. Show brief success feedback: "تم نسخ رسالة الطلب ✓ سيتم فتح Instagram"
-      setOrderToastData({
-        productName: product.name,
-        orderMessage,
-        platformName,
-        platformUrl: orderUrl,
-        platformIcon: typeof platformIcon === 'string' ? platformIcon : undefined,
-        copiedSuccessfully: true,
-      });
-
-      // 4. Open the Instagram profile/order destination
-      if (orderUrl) {
-        window.open(orderUrl, '_blank', 'noopener,noreferrer');
-      }
-    } else {
-      // Graceful fallback: show manual copy modal with clear instructions
-      setOrderToastData({
-        productName: product.name,
-        orderMessage,
-        platformName,
-        platformUrl: orderUrl,
-        platformIcon: typeof platformIcon === 'string' ? platformIcon : undefined,
-        copiedSuccessfully: false,
-      });
-    }
+    // 4. Always show the toast notification with an interactive, direct button to open WhatsApp
+    setOrderToastData({
+      productName: product.name,
+      orderMessage,
+      platformName,
+      platformUrl: orderUrl,
+      platformIcon: typeof platformIcon === 'string' ? platformIcon : 'whatsapp',
+      copiedSuccessfully: copied,
+      windowOpened,
+    });
   };
 
-  // Render Admin View if on /admin
+  // Render Admin View if on /admin (Lazy loaded with isolated AdminAuthProvider)
   if (isAdminView) {
     return (
-      <AdminApp
-        products={products}
-        categories={categories}
-        settings={settings}
-        onViewStore={navigateToStore}
-      />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-[#071E12] text-white font-sans" dir="rtl">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-[#6cff76] border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs text-emerald-200">جاري تحميل لوحة التحكم...</p>
+            </div>
+          </div>
+        }
+      >
+        <AdminAuthProvider>
+          <AdminApp
+            products={products}
+            categories={categories}
+            settings={settings}
+            onViewStore={navigateToStore}
+          />
+        </AdminAuthProvider>
+      </Suspense>
     );
   }
 
   // Render dynamic Custom Landing Page if URL matches an active Landing Page
   if (matchedLandingPage && matchedLandingProduct) {
     return (
-      <PublicLandingPage
-        landingPage={matchedLandingPage}
-        product={matchedLandingProduct}
-        onCreatePendingOrder={async (data) => {
-          const ord = await createPendingOrder(data);
-          return ord.id;
-        }}
-        onBackToHome={navigateToStore}
-      />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-white text-slate-900 font-sans" dir="rtl">
+            <div className="w-8 h-8 border-2 border-[#006633] border-t-transparent rounded-full animate-spin" />
+          </div>
+        }
+      >
+        <PublicLandingPage
+          landingPage={matchedLandingPage}
+          product={matchedLandingProduct}
+          onCreatePendingOrder={async (data) => {
+            const ord = await createPendingOrder(data);
+            return ord.id;
+          }}
+          onBackToHome={navigateToStore}
+        />
+      </Suspense>
     );
   }
 
@@ -308,17 +380,21 @@ function MainStorefront() {
         settings={settings}
       />
 
-      {/* Product Details & Ordering Modal */}
-      <ProductModal
-        product={selectedProduct}
-        initialPlan={selectedPlan}
-        settings={settings}
-        onClose={() => {
-          setSelectedProduct(null);
-          setSelectedPlan(undefined);
-        }}
-        onOrderNow={handleOrderNow}
-      />
+      {/* Product Details & Ordering Modal - Loaded on demand */}
+      {selectedProduct && (
+        <Suspense fallback={null}>
+          <ProductModal
+            product={selectedProduct}
+            initialPlan={selectedPlan}
+            settings={settings}
+            onClose={() => {
+              setSelectedProduct(null);
+              setSelectedPlan(undefined);
+            }}
+            onOrderNow={handleOrderNow}
+          />
+        </Suspense>
+      )}
 
       {/* Dynamic Order Confirmation Toast */}
       <OrderConfirmationToast
@@ -344,12 +420,16 @@ function MainStorefront() {
         </div>
       )}
 
-      {/* General Contact Modal */}
-      <ContactModal
-        isOpen={isContactOpen}
-        settings={settings}
-        onClose={() => setIsContactOpen(false)}
-      />
+      {/* General Contact Modal - Loaded on demand */}
+      {isContactOpen && (
+        <Suspense fallback={null}>
+          <ContactModal
+            isOpen={isContactOpen}
+            settings={settings}
+            onClose={() => setIsContactOpen(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-5 left-5 z-40 flex flex-col items-start gap-2">
@@ -371,9 +451,5 @@ function MainStorefront() {
 }
 
 export default function App() {
-  return (
-    <AdminAuthProvider>
-      <MainStorefront />
-    </AdminAuthProvider>
-  );
+  return <MainStorefront />;
 }

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { SocialPlatform, SocialPlatformIcon } from '../../types';
 import { SocialIcon } from '../common/SocialIcon';
+import { buildWhatsAppOrderUrl, isWhatsAppPlatform } from '../../config';
 
 interface SocialPlatformsManagerProps {
   platforms: SocialPlatform[];
@@ -30,6 +31,7 @@ interface PlatformPreset {
 }
 
 const PRESETS: PlatformPreset[] = [
+  { id: 'whatsapp', name: 'WhatsApp', icon: 'whatsapp', urlPlaceholder: '05XXXXXXXX أو https://wa.me/213XXXXXXXXX', defaultHandle: '0549 75 94 89' },
   { id: 'instagram', name: 'Instagram', icon: 'instagram', urlPlaceholder: 'https://instagram.com/USERNAME', defaultHandle: '@USERNAME' },
   { id: 'facebook', name: 'Facebook', icon: 'facebook', urlPlaceholder: 'https://facebook.com/PAGE', defaultHandle: 'اسم الصفحة' },
   { id: 'telegram', name: 'Telegram', icon: 'telegram', urlPlaceholder: 'https://t.me/USERNAME', defaultHandle: '@USERNAME' },
@@ -52,7 +54,7 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
   const [formName, setFormName] = useState('');
   const [formUrl, setFormUrl] = useState('');
   const [formHandle, setFormHandle] = useState('');
-  const [formIcon, setFormIcon] = useState<SocialPlatformIcon>('instagram');
+  const [formIcon, setFormIcon] = useState<SocialPlatformIcon>('whatsapp');
   const [formEnabled, setFormEnabled] = useState(true);
   const [formIsPrimary, setFormIsPrimary] = useState(false);
   const [formOrder, setFormOrder] = useState(1);
@@ -67,7 +69,7 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
     if (preset) {
       setFormId(`${preset.id}_${Date.now()}`);
       setFormName(preset.name);
-      setFormUrl('');
+      setFormUrl(preset.id === 'whatsapp' ? 'https://wa.me/213549759489' : '');
       setFormHandle(preset.defaultHandle);
       setFormIcon(preset.icon);
     } else {
@@ -101,6 +103,9 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
   const handleApplyPreset = (preset: PlatformPreset) => {
     setFormName(preset.name);
     setFormIcon(preset.icon);
+    if (preset.id === 'whatsapp' && (!formUrl || formUrl === 'https://...')) {
+      setFormUrl('https://wa.me/213549759489');
+    }
     if (!formHandle || formHandle === '@USERNAME') {
       setFormHandle(preset.defaultHandle);
     }
@@ -113,13 +118,30 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
       return;
     }
     if (!formUrl.trim()) {
-      setValidationError('يرجى إدخال رابط المنصة');
+      setValidationError('يرجى إدخال رابط أو رقم هاتف المنصة');
       return;
     }
 
     let cleanUrl = formUrl.trim();
-    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-      cleanUrl = `https://${cleanUrl}`;
+    let effectiveIcon = formIcon;
+
+    // Check if this platform represents WhatsApp
+    const isWa =
+      formIcon === 'whatsapp' ||
+      formName.toLowerCase().includes('whatsapp') ||
+      formName.toLowerCase().includes('واتساب') ||
+      formName.toLowerCase().includes('واتس') ||
+      cleanUrl.includes('wa.me') ||
+      cleanUrl.includes('whatsapp') ||
+      /^(https?:\/\/)?(\+?213|0[567])[0-9]{8}/.test(cleanUrl.replace(/[\s\-\/\.]/g, ''));
+
+    if (isWa) {
+      cleanUrl = buildWhatsAppOrderUrl(cleanUrl);
+      effectiveIcon = 'whatsapp';
+    } else {
+      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+        cleanUrl = `https://${cleanUrl}`;
+      }
     }
 
     let updated: SocialPlatform[];
@@ -132,8 +154,8 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
             ...p,
             name: formName.trim(),
             url: cleanUrl,
-            handleOrDisplay: formHandle.trim(),
-            icon: formIcon,
+            handleOrDisplay: formHandle.trim() || (isWa ? '0549 75 94 89' : ''),
+            icon: effectiveIcon,
             enabled: formEnabled,
             isPrimaryOrderPlatform: formIsPrimary,
             displayOrder: Number(formOrder) || 1,
@@ -151,8 +173,8 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
         id: formId,
         name: formName.trim(),
         url: cleanUrl,
-        handleOrDisplay: formHandle.trim(),
-        icon: formIcon,
+        handleOrDisplay: formHandle.trim() || (isWa ? '0549 75 94 89' : ''),
+        icon: effectiveIcon,
         enabled: formEnabled,
         isPrimaryOrderPlatform: formIsPrimary,
         displayOrder: Number(formOrder) || 1,
@@ -360,14 +382,14 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
             <Globe className="w-8 h-8 text-slate-400 mx-auto mb-2" />
             <p className="text-xs font-bold text-slate-700">لا توجد منصات تواصل مضافة حالياً</p>
             <p className="text-[11px] text-slate-500 mt-1 mb-4">
-              أضف حسابك على Instagram لتمكين الزبائن من إرسال الطلبات والاستفسارات
+              أضف حسابك على WhatsApp لتمكين الزبائن من إرسال واستقبال الطلبات فوراً
             </p>
             <button
               type="button"
               onClick={() => openAddModal(PRESETS[0])}
               className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-xl shadow-xs"
             >
-              + إضافة حساب Instagram الآن
+              + إضافة حساب WhatsApp الآن
             </button>
           </div>
         ) : (
@@ -632,6 +654,7 @@ export const SocialPlatformsManager: React.FC<SocialPlatformsManagerProps> = ({
                     onChange={(e) => setFormIcon(e.target.value as SocialPlatformIcon)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-xs focus:border-sky-500 focus:outline-hidden"
                   >
+                    <option value="whatsapp">WhatsApp</option>
                     <option value="instagram">Instagram</option>
                     <option value="facebook">Facebook</option>
                     <option value="telegram">Telegram</option>

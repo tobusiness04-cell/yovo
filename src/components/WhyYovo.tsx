@@ -22,8 +22,8 @@ export const WhyYovo: React.FC = () => {
     },
     {
       id: 'benefit-support',
-      title: 'دعم مباشر عبر Instagram',
-      desc: 'فريق دعم متواجد للإجابة على استفساراتك ومساعدتك خطوة بخطوة في أي وقت.',
+      title: 'دعم مباشر وسريع عبر WhatsApp',
+      desc: 'فريق دعم متواجد على WhatsApp للإجابة على استفساراتك وتفعيل اشتراكاتك فوراً خطوة بخطوة.',
       icon: Headphones,
       badge: 'متابعة مباشرة',
       accentColor: 'text-[#006633] bg-emerald-50 border-emerald-200',

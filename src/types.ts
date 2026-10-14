@@ -67,6 +67,7 @@ export interface Order {
   totalCost: number;
   profit: number; // sellingPrice - totalCost
   customerInstagram?: string;
+  customerWhatsApp?: string;
   customerName?: string;
   customerPhone?: string;
   notes?: string;
@@ -134,6 +135,7 @@ export interface LandingPage {
 }
 
 export type SocialPlatformIcon =
+  | 'whatsapp'
   | 'instagram'
   | 'facebook'
   | 'telegram'
@@ -157,6 +159,9 @@ export interface SocialPlatform {
 export interface StoreConfig {
   brandName: string;
   brandTagline: string;
+  whatsappUrl?: string;
+  whatsappPhone?: string;
+  whatsappDisplay?: string;
   instagramUrl?: string;
   instagramUsername?: string;
   currency: string;

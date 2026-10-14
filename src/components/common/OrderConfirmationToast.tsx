@@ -27,34 +27,20 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
   useEffect(() => {
     if (!data) return;
 
-    // For successful copies: auto-dismiss after 2.5 seconds
-    // AND dismiss immediately when the user switches away and returns to the tab
+    // For successful copies: auto-dismiss after 6 seconds so user has time to click the link if needed
     if (data.copiedSuccessfully) {
       const autoDismissTimer = setTimeout(() => {
         onClose();
-      }, 2500);
+      }, 6000);
 
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible') {
-          onClose();
+          // Keep it visible if user returned to tab
         }
       };
 
-      const handleWindowFocus = () => {
-        onClose();
-      };
-
-      // Slight delay before attaching tab focus listeners so the initial click doesn't trigger dismissal
-      const attachTimer = setTimeout(() => {
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleWindowFocus);
-      }, 400);
-
       return () => {
         clearTimeout(autoDismissTimer);
-        clearTimeout(attachTimer);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('focus', handleWindowFocus);
       };
     }
   }, [data, onClose]);
@@ -69,15 +55,7 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
     }
   };
 
-  const handleCopyAndOpen = async () => {
-    await copyTextToClipboard(data.orderMessage);
-    if (data.platformUrl) {
-      window.open(data.platformUrl, '_blank', 'noopener,noreferrer');
-    }
-    onClose();
-  };
-
-  // 1. Success State: Short confirmation notification (no lingering modal on return)
+  // 1. Success State: Short confirmation notification with direct interactive WhatsApp button
   if (data.copiedSuccessfully) {
     return (
       <div
@@ -86,17 +64,19 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
         dir="rtl"
       >
         <div className="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-emerald-500/40 ring-1 ring-emerald-500/20">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
                 <Check className="w-4 h-4" />
               </div>
               <div>
                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>تم نسخ رسالة الطلب ✓ سيتم فتح {data.platformName}</span>
+                  <span>تم تجهيز الطلب ونسخ الرسالة ✓</span>
                 </h4>
-                <p className="text-[11px] text-slate-300 mt-0.5">
-                  ألصق الرسالة مباشرة في محادثة الخاص (DM).
+                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                  {data.platformName.toLowerCase().includes('whatsapp') || data.platformIcon === 'whatsapp'
+                    ? 'تم فتح WhatsApp مباشرة. إذا لم تفتح المحادثة تلقائياً، اضغط الزر أدناه:'
+                    : 'ألصق الرسالة مباشرة في محادثة الخاص (DM).'}
                 </p>
               </div>
             </div>
@@ -110,6 +90,20 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
               <X className="w-4 h-4" />
             </button>
           </div>
+
+          {data.platformUrl && (
+            <a
+              href={data.platformUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+              className="mt-3 w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#006633] via-[#008844] to-[#10B981] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98 cursor-pointer"
+            >
+              <SocialIcon icon={data.platformIcon || 'whatsapp'} className="w-4 h-4 text-white" />
+              <span>فتح {data.platformName} الآن لإرسال الطلب</span>
+              <ExternalLink className="w-3.5 h-3.5 ml-1" />
+            </a>
+          )}
         </div>
       </div>
     );
@@ -171,15 +165,17 @@ export const OrderConfirmationToast: React.FC<OrderConfirmationToastProps> = ({
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={handleCopyAndOpen}
+          <a
+            href={data.platformUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
             className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#006633] to-[#008844] hover:opacity-95 text-white text-xs font-bold inline-flex items-center gap-2 transition-all shadow-md shadow-[#006633]/25 cursor-pointer"
           >
-            <SocialIcon icon={data.platformIcon} className="w-3.5 h-3.5" />
+            <SocialIcon icon={data.platformIcon || 'whatsapp'} className="w-3.5 h-3.5" />
             <span>فتح {data.platformName}</span>
             <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+          </a>
         </div>
       </div>
     </div>

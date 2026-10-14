@@ -55,18 +55,6 @@ if (isFirebaseConfigured) {
     appInstance = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     authInstance = getAuth(appInstance);
     dbInstance = getFirestore(appInstance);
-
-    // TEMPORARY CONSOLE DIAGNOSTICS
-    console.log("1. Firebase app name:", appInstance.name);
-    console.log("2. Firebase projectId:", appInstance.options.projectId);
-    console.log("3. Firebase authDomain:", appInstance.options.authDomain);
-    console.log("4. Firebase appId:", appInstance.options.appId);
-    console.log("5. Firestore databaseId:", (dbInstance as any)?._databaseId?.database || '(default)');
-    console.log("getApps():", getApps().map(app => ({
-      name: app.name,
-      projectId: app.options.projectId,
-      appId: app.options.appId
-    })));
   } catch (err: any) {
     console.error('Firebase initialization error:', err);
     initErrorInstance = err instanceof Error ? err : new Error(String(err));

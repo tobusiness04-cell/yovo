@@ -569,6 +569,8 @@ export interface CreateOrderParams {
   paymentFee?: number;
   otherCosts?: number;
   customerInstagram?: string;
+  customerPhone?: string;
+  customerWhatsApp?: string;
   customerName?: string;
   landingPageId?: string;
   notes?: string;
@@ -576,7 +578,7 @@ export interface CreateOrderParams {
 
 /**
  * Creates an order record with initial 'pending' status.
- * Used when a visitor clicks "اطلب الآن" / Instagram order flow.
+ * Used when a visitor clicks "اطلب الآن" / WhatsApp/Instagram order flow.
  */
 export async function createPendingOrder(params: CreateOrderParams): Promise<Order> {
   const orderId = generateOrderId();
@@ -618,6 +620,8 @@ export async function createPendingOrder(params: CreateOrderParams): Promise<Ord
     totalCost,
     profit,
     customerInstagram: params.customerInstagram?.trim() || '',
+    customerPhone: params.customerPhone?.trim() || params.customerWhatsApp?.trim() || '',
+    customerWhatsApp: params.customerWhatsApp?.trim() || params.customerPhone?.trim() || '',
     customerName: params.customerName?.trim() || '',
     notes: params.notes?.trim() || '',
     status: 'pending',
@@ -642,6 +646,8 @@ export async function createPendingOrder(params: CreateOrderParams): Promise<Ord
       totalCost: newOrder.totalCost,
       profit: newOrder.profit,
       customerInstagram: newOrder.customerInstagram,
+      customerPhone: newOrder.customerPhone,
+      customerWhatsApp: newOrder.customerWhatsApp,
       customerName: newOrder.customerName,
       notes: newOrder.notes,
       status: 'pending',

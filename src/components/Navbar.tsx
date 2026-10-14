@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpLeft, Send, Sparkles, Instagram } from 'lucide-react';
+import { Menu, X, ArrowUpLeft, Send, Sparkles } from 'lucide-react';
 import { storeConfig, navLinks } from '../config';
 import { StoreConfig } from '../types';
+import { SocialIcon } from './common/SocialIcon';
 
 interface NavbarProps {
   onOpenContact: () => void;
@@ -84,8 +85,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenContact}
               className="text-xs font-bold px-3.5 py-2 text-slate-800 bg-[#F1F5F9] hover:bg-emerald-50 hover:text-[#006633] rounded-xl transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
-              <Instagram className="w-3.5 h-3.5 text-[#006633]" />
-              <span>تواصل معنا</span>
+              <SocialIcon icon="whatsapp" className="w-3.5 h-3.5 text-[#006633]" />
+              <span>تواصل عبر WhatsApp</span>
             </button>
 
             <a
@@ -104,16 +105,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenContact}
-              className="p-2 text-slate-700 hover:text-[#006633] bg-[#F1F5F9] rounded-xl transition-colors"
-              aria-label="تواصل"
+              className="p-2 min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-700 hover:text-[#006633] bg-[#F1F5F9] rounded-xl transition-colors"
+              aria-label="تواصل معنا عبر WhatsApp"
             >
-              <Instagram className="w-4 h-4 text-[#006633]" />
+              <SocialIcon icon="whatsapp" className="w-4 h-4 text-[#006633]" />
             </button>
 
             <a
               id="mobile-quick-cta"
               href="#products"
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#006633] to-[#008844] shadow-sm active:scale-95 transition-transform"
+              className="px-3 py-2 min-h-[42px] flex items-center justify-center rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#006633] to-[#008844] shadow-sm active:scale-95 transition-transform"
             >
               الاشتراكات
             </a>
@@ -122,10 +123,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="mobile-menu-toggle"
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-1.5 text-slate-800 hover:bg-[#F1F5F9] rounded-xl transition-colors"
+              className="p-2 min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-800 hover:bg-[#F1F5F9] rounded-xl transition-colors"
               aria-label="قائمة التصفح"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
 
@@ -169,8 +170,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
                 className="w-full text-center py-2.5 rounded-xl font-bold text-xs text-slate-800 bg-[#F1F5F9] hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5"
               >
-                <Instagram className="w-3.5 h-3.5 text-[#006633]" />
-                <span>تواصل معنا عبر Instagram</span>
+                <SocialIcon icon="whatsapp" className="w-3.5 h-3.5 text-[#006633]" />
+                <span>تواصل معنا عبر WhatsApp</span>
               </button>
             </div>
           </div>

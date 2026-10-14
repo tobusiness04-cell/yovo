@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { StoreConfig, SocialPlatform } from '../../types';
 import { Save, Check, Settings, ShieldCheck, FileText, Share2, MessageSquare, Copy, RotateCcw } from 'lucide-react';
-import { defaultSocialPlatforms, DEFAULT_ORDER_MESSAGE_TEMPLATE, generateOrderMessage } from '../../config';
+import { defaultSocialPlatforms, DEFAULT_ORDER_MESSAGE_TEMPLATE, generateOrderMessage, buildWhatsAppOrderUrl, isWhatsAppPlatform } from '../../config';
 import { SocialPlatformsManager } from './SocialPlatformsManager';
+import { SocialIcon } from '../common/SocialIcon';
 
 interface AdminSettingsProps {
   settings: StoreConfig;
@@ -30,24 +31,32 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
       'Yovo علامة مستقلة. جميع أسماء المنتجات والماركات التجارية المذكورة (مثل Canva، CapCut، وغيرها) ملك لأصحابها ولا ندّعي أي شراكة أو تمثيل رسمي.'
   );
 
+  // WhatsApp direct phone state
+  const [whatsappPhone, setWhatsappPhone] = useState(() => {
+    if (settings.whatsappPhone) return settings.whatsappPhone;
+    if (settings.whatsappDisplay && !settings.whatsappDisplay.includes('http')) return settings.whatsappDisplay;
+    const wa = (settings.socialPlatforms || []).find((p) => isWhatsAppPlatform(p));
+    if (wa?.url) {
+      const digits = wa.url.replace(/[^\d]/g, '');
+      if (digits.includes('549759489')) return '0549 75 94 89';
+    }
+    return '0549 75 94 89';
+  });
+
   // Social platforms state
   const [socialPlatforms, setSocialPlatforms] = useState<SocialPlatform[]>(() => {
     if (Array.isArray(settings.socialPlatforms) && settings.socialPlatforms.length > 0) {
-      return settings.socialPlatforms;
-    }
-    if (settings.instagramUrl) {
-      return [
-        {
-          id: 'instagram',
-          name: 'Instagram',
-          url: settings.instagramUrl,
-          handleOrDisplay: settings.instagramUsername || '@yovodz',
-          icon: 'instagram',
-          enabled: true,
-          isPrimaryOrderPlatform: true,
-          displayOrder: 1,
-        },
-      ];
+      return settings.socialPlatforms.map((p) => {
+        if (isWhatsAppPlatform(p)) {
+          return {
+            ...p,
+            icon: 'whatsapp' as const,
+            url: buildWhatsAppOrderUrl(p.url),
+            handleOrDisplay: p.handleOrDisplay && !p.handleOrDisplay.startsWith('http') ? p.handleOrDisplay : '0549 75 94 89',
+          };
+        }
+        return p;
+      });
     }
     return defaultSocialPlatforms;
   });
@@ -65,9 +74,43 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
     try {
       setSaving(true);
 
-      // Find primary platform for backwards-compatible fields
-      const primary = socialPlatforms.find((p) => p.isPrimaryOrderPlatform && p.enabled) || socialPlatforms[0];
-      const instaPlatform = socialPlatforms.find((p) => p.icon === 'instagram') || primary;
+      // Clean WhatsApp URL from either direct input or platforms
+      const cleanWaUrl = buildWhatsAppOrderUrl(whatsappPhone);
+      const cleanWaDisplay = whatsappPhone.trim() || '0549 75 94 89';
+
+      // Normalize social platforms so any WhatsApp entry is 100% valid
+      let hasWaPlatform = false;
+      const normalizedPlatforms = socialPlatforms.map((p) => {
+        if (isWhatsAppPlatform(p)) {
+          hasWaPlatform = true;
+          return {
+            ...p,
+            id: p.id || 'whatsapp',
+            name: 'WhatsApp',
+            icon: 'whatsapp' as const,
+            url: cleanWaUrl,
+            handleOrDisplay: cleanWaDisplay,
+            enabled: true,
+          };
+        }
+        return p;
+      });
+
+      if (!hasWaPlatform) {
+        normalizedPlatforms.unshift({
+          id: 'whatsapp',
+          name: 'WhatsApp',
+          icon: 'whatsapp',
+          url: cleanWaUrl,
+          handleOrDisplay: cleanWaDisplay,
+          enabled: true,
+          isPrimaryOrderPlatform: true,
+          displayOrder: 1,
+        });
+      }
+
+      const primary = normalizedPlatforms.find((p) => p.isPrimaryOrderPlatform && p.enabled) || normalizedPlatforms[0];
+      const instaPlatform = normalizedPlatforms.find((p) => p.icon === 'instagram');
 
       await onSaveSettings({
         brandName,
@@ -77,11 +120,14 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         guaranteeGeneralText,
         footerText,
         independentBrandNotice,
-        socialPlatforms,
-        instagramUrl: instaPlatform?.url || 'https://instagram.com/yovodz',
-        instagramUsername: instaPlatform?.handleOrDisplay || '@yovodz',
+        socialPlatforms: normalizedPlatforms,
+        whatsappUrl: cleanWaUrl,
+        whatsappPhone: cleanWaDisplay,
+        whatsappDisplay: cleanWaDisplay,
+        instagramUrl: instaPlatform?.url || settings.instagramUrl || 'https://instagram.com/yovodz',
+        instagramUsername: instaPlatform?.handleOrDisplay || settings.instagramUsername || '@yovodz',
       });
-      showToast('تم حفظ إعدادات المتجر ومنصات التواصل بنجاح');
+      showToast('تم حفظ إعدادات المتجر ومنصات التواصل وتحديث رابط WhatsApp بنجاح ✓');
     } catch (e: any) {
       alert('حدث خطأ أثناء حفظ الإعدادات: ' + e.message);
     } finally {
@@ -174,6 +220,28 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-xs focus:border-sky-500 focus:outline-hidden"
             />
           </div>
+
+          <div className="pt-2 border-t border-slate-100">
+            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <SocialIcon icon="whatsapp" className="w-3.5 h-3.5 text-emerald-600" />
+                <span>رقم WhatsApp الأساسي لاستقبال الطلبات</span>
+              </span>
+              <span className="text-[10px] text-emerald-600 font-mono font-medium">
+                {buildWhatsAppOrderUrl(whatsappPhone)}
+              </span>
+            </label>
+            <input
+              type="text"
+              value={whatsappPhone}
+              onChange={(e) => setWhatsappPhone(e.target.value)}
+              placeholder="05XXXXXXXX أو +213XXXXXXXXX"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50/20 text-slate-900 text-xs font-mono focus:border-emerald-500 focus:outline-hidden"
+            />
+            <p className="text-[11px] text-slate-500 mt-1">
+              يمكنك كتابة رقم الهاتف الجزائري مباشرة (مثل 0549759489 أو +213549759489)، وسيقوم المتجر تلقائياً بتوليد رابط المراسلة الصحيح <code className="text-emerald-700 font-mono font-bold">wa.me</code>.
+            </p>
+          </div>
         </div>
 
         {/* Order Message Template */}
@@ -196,7 +264,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
           </div>
 
           <p className="text-xs text-slate-500 leading-relaxed">
-            الرسالة التي يتم إنشاؤها تلقائياً بالاعتماد على المنتج والخطة المحددة ونسخها لحافظة الزبون، ليقوم بلصقها في الخاص (DM) لمنصة الطلب (مثل Instagram).
+            الرسالة التي يتم إنشاؤها وتعبئتها تلقائياً بالاعتماد على المنتج والخطة المحددة وإرسالها مباشرة عبر WhatsApp مع نسخها لحافظة الزبون.
           </p>
 
           <div>

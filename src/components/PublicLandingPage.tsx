@@ -7,14 +7,16 @@ import {
   Copy,
   ExternalLink,
   ChevronDown,
-  Instagram,
   ArrowRight,
   Sparkles,
   HelpCircle,
   Clock,
   Award,
   AlertCircle,
+  Phone,
 } from 'lucide-react';
+import { SocialIcon } from './common/SocialIcon';
+import { buildWhatsAppOrderUrl } from '../config';
 
 interface PublicLandingPageProps {
   landingPage: LandingPage;
@@ -30,6 +32,7 @@ interface PublicLandingPageProps {
     adCost?: number;
     otherCosts?: number;
     customerInstagram?: string;
+    customerPhone?: string;
     customerName?: string;
     landingPageId?: string;
   }) => Promise<string>;
@@ -50,7 +53,7 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
   // Initial plan selection
   const initialPlan = plans.find((p) => p.id === landingPage.planId) || plans[0];
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan>(initialPlan);
-  const [customerInstagram, setCustomerInstagram] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
 
   // Order modal state
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -65,17 +68,17 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
   const price = selectedPlan?.price || product.price;
   const currency = product.currency || 'دج';
 
-  // Instagram order message
-  const instagramMessage = useMemo(() => {
+  // WhatsApp order message
+  const orderMessage = useMemo(() => {
     return `السلام عليكم، أريد طلب اشتراك:
 المنتج: ${product.name}
 الخطة: ${selectedPlan.duration}
 السعر: ${price.toLocaleString()} ${currency}
-${customerInstagram.trim() ? `حساب إنستغرام: @${customerInstagram.replace('@', '')}` : ''}
+${customerPhone.trim() ? `رقم الزبون: ${customerPhone.trim()}` : ''}
 ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
 
 يرجى إرسال معلومات الحساب وتفاصيل الدفع (بريدي موب / CCP). شكراً!`;
-  }, [product.name, selectedPlan.duration, price, currency, customerInstagram, generatedOrderId]);
+  }, [product.name, selectedPlan.duration, price, currency, customerPhone, generatedOrderId]);
 
   // Click "اطلب الآن" handler
   const handleOrderClick = async () => {
@@ -103,7 +106,8 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
         productCost: planCost,
         adCost: planAdCost,
         otherCosts: planOtherCost,
-        customerInstagram: customerInstagram.trim() || undefined,
+        customerPhone: customerPhone.trim() || undefined,
+        customerInstagram: customerPhone.trim() || undefined,
         landingPageId: landingPage.slug,
       });
 
@@ -120,15 +124,22 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
     }
   };
 
-  const handleCopyAndOpenInstagram = () => {
-    navigator.clipboard.writeText(instagramMessage);
+  const handleCopyAndOpenWhatsApp = () => {
+    navigator.clipboard.writeText(orderMessage);
     setCopiedMessage(true);
     setTimeout(() => setCopiedMessage(false), 2500);
 
-    // Open Instagram direct message or profile
+    const waUrl = buildWhatsAppOrderUrl(undefined, orderMessage);
+
+    // Open WhatsApp directly with prefilled message
     setTimeout(() => {
-      window.open('https://ig.me/m/yovo.dz', '_blank', 'noopener,noreferrer');
-    }, 400);
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+    }, 300);
+  };
+
+  const handleOpenInstagramFallback = () => {
+    navigator.clipboard.writeText(orderMessage);
+    window.open('https://instagram.com/yovodz', '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -158,8 +169,8 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
               onClick={handleOrderClick}
               className="px-4 py-2 bg-gradient-to-r from-[#006633] to-[#008844] hover:opacity-95 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-[#006633]/25 flex items-center gap-1.5 cursor-pointer"
             >
-              <Instagram className="w-3.5 h-3.5" />
-              <span>{landingPage.ctaText || 'اطلب الآن'}</span>
+              <SocialIcon icon="whatsapp" className="w-3.5 h-3.5" />
+              <span>{landingPage.ctaText || 'اطلب الآن عبر WhatsApp'}</span>
             </button>
           </div>
         </div>
@@ -258,18 +269,18 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
             </div>
           </div>
 
-          {/* Customer Instagram Handle (Optional) */}
+          {/* Customer Phone / WhatsApp Contact (Optional) */}
           <div className="pb-6">
             <label className="block text-xs font-bold text-gray-300 mb-1.5">
-              حسابك على إنستغرام (لتسهيل وتسريع التواصل):
+              رقم الواتساب أو الهاتف (لتأكيد الطلب وتسهيل التواصل):
             </label>
             <div className="relative max-w-sm">
-              <Instagram className="w-4 h-4 text-gray-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
+              <Phone className="w-4 h-4 text-emerald-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                value={customerInstagram}
-                onChange={(e) => setCustomerInstagram(e.target.value)}
-                placeholder="@username (اختياري)"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="05XXXXXXXX / 06XXXXXXXX (اختياري)"
                 className="w-full pr-10 pl-4 py-2.5 bg-black/60 border border-gray-800 rounded-xl text-white text-xs placeholder:text-gray-600 focus:border-[#006633] focus:outline-hidden dir-ltr text-right"
               />
             </div>
@@ -291,8 +302,8 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
               disabled={isSubmittingOrder}
               className="w-full py-4 bg-gradient-to-r from-[#006633] to-[#008844] hover:opacity-95 text-white font-black text-base rounded-2xl transition-all shadow-xl shadow-[#006633]/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              <Instagram className="w-5 h-5 text-[#6cff76]" />
-              <span>{isSubmittingOrder ? 'جارٍ تسجيل الطلب...' : (landingPage.ctaText || 'اطلب الآن عبر Instagram')}</span>
+              <SocialIcon icon="whatsapp" className="w-5 h-5 text-white" />
+              <span>{isSubmittingOrder ? 'جارٍ تسجيل الطلب...' : (landingPage.ctaText || 'اطلب الآن عبر WhatsApp')}</span>
             </button>
             <p className="text-center text-[11px] text-gray-400 mt-2">
               الدفع متاح عبر BaridiMob أو CCP مع ضمان استرداد فوري إن لم تستلم حسابك
@@ -386,15 +397,15 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
             جاهز لتفعيل اشتراكك الآن؟
           </h3>
           <p className="text-xs text-gray-400 max-w-md mx-auto">
-            فريقنا متواجد عبر رسائل إنستغرام لمساعدتك وتفعيل اشتراكك بأقصى سرعة.
+            فريقنا متواجد عبر WhatsApp لمساعدتك وتفعيل اشتراكك بأقصى سرعة.
           </p>
           <button
             type="button"
             onClick={handleOrderClick}
             className="px-8 py-3.5 bg-gradient-to-r from-[#006633] to-[#008844] hover:opacity-95 text-white font-black text-sm rounded-2xl transition-all shadow-lg shadow-[#006633]/25 inline-flex items-center gap-2 cursor-pointer"
           >
-            <Instagram className="w-4 h-4" />
-            <span>{landingPage.ctaText || 'اطلب الآن عبر Instagram'}</span>
+            <SocialIcon icon="whatsapp" className="w-4 h-4" />
+            <span>{landingPage.ctaText || 'اطلب الآن عبر WhatsApp'}</span>
           </button>
         </section>
       </main>
@@ -404,57 +415,74 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
         <p>© {new Date().getFullYear()} YOVO — متجر الاشتراكات الرقمية الموثوق في الجزائر</p>
       </footer>
 
-      {/* Order Confirmation Modal (Existing Instagram Flow Preserved!) */}
+      {/* Order Confirmation Modal (WhatsApp Flow as Primary) */}
       {isOrderModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 text-right shadow-2xl relative animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <h4 className="text-base font-black text-white flex items-center gap-2">
-                <Instagram className="w-5 h-5 text-pink-500" />
-                <span>إتمام الطلب عبر Instagram</span>
+                <SocialIcon icon="whatsapp" className="w-5 h-5 text-emerald-400" />
+                <span>إتمام الطلب عبر WhatsApp</span>
               </h4>
               <button
                 type="button"
                 onClick={() => setIsOrderModalOpen(false)}
-                className="text-slate-400 hover:text-white text-sm font-bold"
+                className="text-slate-400 hover:text-white text-sm font-bold cursor-pointer"
               >
                 إغلاق
               </button>
             </div>
 
             <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-              تم تجهيز رسالة طلبك مع تفاصيل الاشتراك. انسخ الرسالة وأرسلها لحسابنا الرسمي على إنستغرام لإتمام التفعيل فوراً:
+              تم تجهيز رسالة طلبك مع تفاصيل الاشتراك. اضغط لفتح محادثة WhatsApp مباشرة مع الرسالة لإتمام التفعيل فوراً:
             </p>
 
             {/* Formatted Message Box */}
             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-4 text-xs font-mono text-slate-200 whitespace-pre-line select-all leading-relaxed">
-              {instagramMessage}
+              {orderMessage}
             </div>
 
             <div className="space-y-2">
-              <button
-                type="button"
-                onClick={handleCopyAndOpenInstagram}
-                className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-amber-600 hover:opacity-90 text-white font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+              <a
+                href={buildWhatsAppOrderUrl(undefined, orderMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  try {
+                    navigator.clipboard.writeText(orderMessage);
+                  } catch (e) {}
+                  setCopiedMessage(true);
+                  setTimeout(() => setCopiedMessage(false), 3000);
+                }}
+                className="w-full py-3.5 bg-gradient-to-r from-[#006633] via-[#008844] to-[#10B981] hover:opacity-95 text-white font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 {copiedMessage ? (
                   <>
                     <CheckCircle className="w-4 h-4 text-emerald-300" />
-                    <span>تم النسخ! جارٍ فتح Instagram...</span>
+                    <span>تم النسخ! فتح WhatsApp...</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4" />
-                    <span>نسخ الرسالة وفتح Instagram</span>
+                    <SocialIcon icon="whatsapp" className="w-4 h-4 text-white" />
+                    <span>فتح WhatsApp وإرسال الطلب</span>
                     <ExternalLink className="w-3.5 h-3.5 ml-1" />
                   </>
                 )}
+              </a>
+
+              <button
+                type="button"
+                onClick={handleOpenInstagramFallback}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <SocialIcon icon="instagram" className="w-3.5 h-3.5 text-pink-400" />
+                <span>أو الطلب عبر Instagram</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsOrderModalOpen(false)}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors"
+                className="w-full py-2 text-slate-500 hover:text-slate-400 rounded-xl text-xs transition-colors cursor-pointer"
               >
                 العودة للصفحة
               </button>

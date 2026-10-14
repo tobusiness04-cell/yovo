@@ -44,7 +44,7 @@ export const TrustSection: React.FC = () => {
                 <span className="text-slate-900">تواصل إنساني مباشر</span>
               </div>
               <p className="text-xs text-slate-500 leading-normal font-normal">
-                تتواصل معنا وتطلب مباشرة عبر Instagram دون روبوتات أو تعقيدات.
+                تتواصل معنا وتطلب مباشرة عبر WhatsApp دون تعقيدات.
               </p>
             </div>
 

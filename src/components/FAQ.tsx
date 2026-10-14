@@ -80,7 +80,7 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
         <div className="mt-10 p-6 rounded-2xl bg-white border border-slate-200 text-center flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
           <div className="text-right">
             <h4 className="text-sm font-bold text-slate-900">عندك سؤال آخر ما لقيتهش هنا؟</h4>
-            <p className="text-xs text-slate-500 mt-0.5">راسلنا مباشرة على إنستغرام ونجاوبوك فوراً في أي وقت.</p>
+            <p className="text-xs text-slate-500 mt-0.5">راسلنا مباشرة على WhatsApp ونجاوبوك فوراً في أي وقت.</p>
           </div>
           <button
             type="button"
@@ -88,7 +88,7 @@ export const FAQ: React.FC<FAQProps> = ({ onOpenContact }) => {
             className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#006633] to-[#008844] hover:opacity-95 shadow-md shadow-[#006633]/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
           >
             <Send className="w-4 h-4 text-[#6cff76]" />
-            <span>اسألنا على Instagram</span>
+            <span>اسألنا على WhatsApp</span>
           </button>
         </div>
 

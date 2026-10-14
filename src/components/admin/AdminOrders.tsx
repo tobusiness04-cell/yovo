@@ -19,6 +19,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
+import { SocialIcon } from '../common/SocialIcon';
 
 interface AdminOrdersProps {
   orders: Order[];
@@ -242,7 +243,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="بحث برقم الطلب، اسم المنتج، اسم الزبون، أو يوزر Instagram..."
+            placeholder="بحث برقم الطلب، اسم المنتج، اسم الزبون، أو رقم WhatsApp..."
             className="w-full pr-10 pl-4 py-2 text-xs rounded-xl border border-slate-200 focus:border-sky-500 focus:outline-hidden bg-slate-50/50 focus:bg-white transition-colors"
           />
         </div>
@@ -288,7 +289,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {orders.length === 0
-                ? 'عند قيام الزوار بالنقر على "اطلب الآن" أو إتمام طلب عبر Instagram، ستُنشأ الطلبات تلقائياً هنا في حالة "قيد الانتظار".'
+                ? 'عند قيام الزوار بالنقر على "اطلب الآن" أو إتمام طلب عبر WhatsApp، ستُنشأ الطلبات تلقائياً هنا في حالة "قيد الانتظار".'
                 : 'جرّب تعديل معايير البحث أو تصفية الحالة.'}
             </p>
           </div>
@@ -302,7 +303,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
                   <th className="py-3.5 px-4">سعر البيع</th>
                   <th className="py-3.5 px-4">إجمالي التكلفة</th>
                   <th className="py-3.5 px-4">الربح المتوقع/المحقق</th>
-                  <th className="py-3.5 px-4">الزبون / Instagram</th>
+                  <th className="py-3.5 px-4">الزبون / وسيلة التواصل</th>
                   <th className="py-3.5 px-4">الحالة</th>
                   <th className="py-3.5 px-4">التاريخ</th>
                   <th className="py-3.5 px-4 text-center">إجراءات</th>
@@ -363,11 +364,33 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
                       </td>
 
                       <td className="py-3.5 px-4 text-slate-700">
-                        {order.customerInstagram ? (
-                          <div className="flex items-center gap-1 text-slate-900 font-medium dir-ltr justify-end">
-                            <span>@{order.customerInstagram.replace('@', '')}</span>
-                            <Instagram className="w-3.5 h-3.5 text-pink-600 shrink-0" />
-                          </div>
+                        {order.customerPhone || order.customerWhatsApp || order.customerInstagram ? (
+                          (() => {
+                            const contact = (order.customerPhone || order.customerWhatsApp || order.customerInstagram || '').trim();
+                            const isPhone = /^(\+|00|[0-9])/.test(contact) || contact.includes('213');
+                            if (isPhone) {
+                              const cleanDigits = contact.replace(/[^\d]/g, '');
+                              const waDigits = cleanDigits.startsWith('0') && cleanDigits.length === 10 ? '213' + cleanDigits.slice(1) : cleanDigits;
+                              return (
+                                <a
+                                  href={`https://wa.me/${waDigits}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-900 font-medium dir-ltr justify-end hover:underline"
+                                  title="مراسلة الزبون على WhatsApp"
+                                >
+                                  <span>{contact}</span>
+                                  <SocialIcon icon="whatsapp" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                </a>
+                              );
+                            }
+                            return (
+                              <div className="flex items-center gap-1 text-slate-900 font-medium dir-ltr justify-end">
+                                <span>@{contact.replace('@', '')}</span>
+                                <Instagram className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                              </div>
+                            );
+                          })()
                         ) : order.customerName ? (
                           <span>{order.customerName}</span>
                         ) : (
@@ -566,14 +589,14 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500 block mb-1">يوزر إنستغرام أو اسم الزبون</label>
+                  <label className="text-[11px] font-bold text-slate-500 block mb-1">بيانات التواصل (WhatsApp / هاتف / يوزر) أو اسم الزبون</label>
                   {isEditing ? (
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={editCustomerInstagram}
                         onChange={(e) => setEditCustomerInstagram(e.target.value)}
-                        placeholder="Instagram @username"
+                        placeholder="رقم الواتساب / الهاتف أو الحساب"
                         className="flex-1 px-3 py-2 border border-slate-200 rounded-xl bg-white focus:border-sky-500 focus:outline-hidden"
                       />
                       <input
@@ -585,13 +608,41 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
                       />
                     </div>
                   ) : (
-                    <div className="p-3 bg-white border border-slate-200 rounded-xl text-slate-800">
-                      {selectedOrder.customerInstagram ? (
-                        <span className="font-bold text-pink-600 dir-ltr inline-block">
-                          @{selectedOrder.customerInstagram.replace('@', '')}
-                        </span>
-                      ) : (
-                        selectedOrder.customerName || <span className="text-slate-400">غير مسجل</span>
+                    <div className="p-3 bg-white border border-slate-200 rounded-xl text-slate-800 flex items-center justify-between">
+                      <div>
+                        {selectedOrder.customerInstagram || selectedOrder.customerPhone || selectedOrder.customerWhatsApp ? (
+                          (() => {
+                            const contact = (selectedOrder.customerPhone || selectedOrder.customerWhatsApp || selectedOrder.customerInstagram || '').trim();
+                            const isPhone = /^(\+|00|[0-9])/.test(contact) || contact.includes('213');
+                            if (isPhone) {
+                              const cleanDigits = contact.replace(/[^\d]/g, '');
+                              const waDigits = cleanDigits.startsWith('0') && cleanDigits.length === 10 ? '213' + cleanDigits.slice(1) : cleanDigits;
+                              return (
+                                <a
+                                  href={`https://wa.me/${waDigits}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-bold text-emerald-600 hover:text-emerald-800 dir-ltr inline-flex items-center gap-1.5 hover:underline"
+                                  title="فتح محادثة WhatsApp"
+                                >
+                                  <SocialIcon icon="whatsapp" className="w-4 h-4 text-emerald-600" />
+                                  <span>{contact} (WhatsApp)</span>
+                                </a>
+                              );
+                            }
+                            return (
+                              <span className="font-bold text-pink-600 dir-ltr inline-flex items-center gap-1">
+                                <Instagram className="w-3.5 h-3.5 text-pink-600" />
+                                <span>@{contact.replace('@', '')}</span>
+                              </span>
+                            );
+                          })()
+                        ) : (
+                          selectedOrder.customerName || <span className="text-slate-400">غير مسجل</span>
+                        )}
+                      </div>
+                      {selectedOrder.customerName && (selectedOrder.customerInstagram || selectedOrder.customerPhone) && (
+                        <span className="text-xs text-slate-500 font-medium">{selectedOrder.customerName}</span>
                       )}
                     </div>
                   )}

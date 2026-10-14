@@ -17,8 +17,8 @@ export const HowItWorks: React.FC = () => {
     },
     {
       number: '03',
-      title: 'راسلنا عبر Instagram',
-      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر Instagram مع رسالة طلبك الجاهزة.',
+      title: 'راسلنا عبر WhatsApp',
+      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر WhatsApp مع رسالة طلبك الجاهزة لتأكيد التفعيل.',
       icon: Send,
     },
     {

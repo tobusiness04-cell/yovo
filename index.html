@@ -36,7 +36,7 @@
     <!-- Facebook / Meta Domain Verification -->
     <meta name="facebook-domain-verification" content="4f3pa2m9yr1zgn9zhhtcku7opdgcn9" />
 
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code (Non-blocking high-performance initialization) -->
     <script>
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -44,17 +44,38 @@
       if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
       n.queue=[];t=b.createElement(e);t.async=!0;
       t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      if('requestIdleCallback' in window){
+        window.requestIdleCallback(function(){s.parentNode.insertBefore(t,s);},{timeout:2000});
+      } else {
+        setTimeout(function(){s.parentNode.insertBefore(t,s);},500);
+      }
+      }(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '1561166455258999');
       fbq('track', 'PageView');
     </script>
     <!-- End Meta Pixel Code -->
 
-    <!-- Google Fonts: Tajawal for Arabic & Plus Jakarta Sans for Latin/English/Numbers -->
+    <!-- Google Fonts: High-Performance Non-Render-Blocking Asynchronous Loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Tajawal:wght@500;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Tajawal:wght@500;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Tajawal:wght@500;700;800&display=swap"
+      />
+    </noscript>
 
     <!-- Organization Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -65,6 +86,26 @@
       "name": "Yovo",
       "url": "https://yovodz.shop/",
       "logo": "https://yovodz.shop/logo.png"
+    }
+    </script>
+
+    <!-- Store & E-Commerce Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "@id": "https://yovodz.shop/#store",
+      "name": "Yovo",
+      "url": "https://yovodz.shop/",
+      "logo": "https://yovodz.shop/logo.png",
+      "image": "https://yovodz.shop/og-image.png",
+      "description": "متجر اشتراكات رقمية في الجزائر. اشتراكات Canva Pro وCapCut Pro وChatGPT وأدوات احترافية أصلية بأسعار واضحة وتفعيل فوري.",
+      "currenciesAccepted": "DZD",
+      "priceRange": "450 DZD - 5800 DZD",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Algeria"
+      }
     }
     </script>
 

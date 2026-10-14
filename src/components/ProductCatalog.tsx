@@ -77,6 +77,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             <input
               id="product-search-input"
               type="text"
+              aria-label="ابحث عن اشتراك بالاسم"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ابحث عن اشتراك (Canva, CapCut, ChatGPT...)"
@@ -86,10 +87,10 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 min-w-[32px] min-h-[32px] flex items-center justify-center"
                 aria-label="مسح البحث"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>

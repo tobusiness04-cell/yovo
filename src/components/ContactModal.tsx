@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Send, ArrowUpLeft, Star, AlertCircle } from 'lucide-react';
-import { storeConfig, getEnabledSocialPlatforms, getOrderPlatformUrl } from '../config';
+import { storeConfig, getEnabledSocialPlatforms, getOrderPlatformUrl, buildWhatsAppOrderUrl, isWhatsAppPlatform } from '../config';
 import { StoreConfig } from '../types';
 import { SocialIcon } from './common/SocialIcon';
 
@@ -53,7 +53,10 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, set
           {enabledPlatforms.length > 0 ? (
             enabledPlatforms.map((platform) => {
               const isPrimary = Boolean(platform.isPrimaryOrderPlatform);
-              const targetUrl = getOrderPlatformUrl(platform.url);
+              const isWhatsApp = isWhatsAppPlatform(platform);
+              const targetUrl = isWhatsApp
+                ? buildWhatsAppOrderUrl(platform.url)
+                : getOrderPlatformUrl(platform.url);
 
               return (
                 <a

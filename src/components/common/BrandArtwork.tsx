@@ -19,6 +19,10 @@ export const BrandArtwork: React.FC<BrandArtworkProps> = ({
         <img
           src={product.imageUrl || product.image}
           alt={product.name}
+          width="400"
+          height="275"
+          loading="lazy"
+          decoding="async"
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {

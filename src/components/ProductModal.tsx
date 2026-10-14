@@ -4,6 +4,7 @@ import { Product, ProductPlan, StoreConfig } from '../types';
 import { storeConfig, getPrimaryOrderPlatform, getEnabledSocialPlatforms, getOrderPlatformUrl } from '../config';
 import { formatPrice } from '../lib/formatters';
 import { BrandArtwork } from './common/BrandArtwork';
+import { SocialIcon } from './common/SocialIcon';
 
 interface ProductModalProps {
   product: Product | null;
@@ -49,6 +50,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const isAvailable = product.available && currentPlan.available !== false;
   const currentPrice = typeof currentPlan.price === 'number' ? currentPlan.price : product.price;
   const currentDuration = currentPlan.duration || product.duration || 'شهري';
+
+  const primaryPlatform = getPrimaryOrderPlatform(currentSettings);
+  const platformName = primaryPlatform?.name || 'WhatsApp';
+  const orderCtaText = product.orderCtaText || `اطلب الآن عبر ${platformName}`;
 
   return (
     <div
@@ -228,8 +233,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             >
               {isAvailable ? (
                 <>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>اطلب الآن عبر Instagram</span>
+                  <SocialIcon icon={primaryPlatform?.icon || 'whatsapp'} className="w-4 h-4 text-white" />
+                  <span>{orderCtaText}</span>
                   <ArrowUpLeft className="w-4 h-4" />
                 </>
               ) : (

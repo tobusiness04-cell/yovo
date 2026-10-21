@@ -1,84 +1,77 @@
 import React from 'react';
-import { Layers, CreditCard, Send, CheckCircle } from 'lucide-react';
+import { Layers, Send, Smartphone, CheckCircle } from 'lucide-react';
 
 export const HowItWorks: React.FC = () => {
   const steps = [
     {
       number: '01',
       title: 'اختار الاشتراك',
-      description: 'تصفح قائمة الاشتراكات المتوفرة واختار الأداة اللي تحتاجها في عملك أو دراستك.',
+      description: 'تصفح قائمة الاشتراكات واختار الأداة والخطة (شهري، سنوي...) التي تناسبك.',
       icon: Layers,
     },
     {
       number: '02',
-      title: 'شوف السعر والمدة',
-      description: 'اطلع على الخطط المتوفرة (شهري، 3 أشهر، أو سنوي) وتعرف على السعر المحدد بالدينار.',
-      icon: CreditCard,
-    },
-    {
-      number: '03',
-      title: 'راسلنا عبر WhatsApp',
-      description: 'اضغط على "اطلب الآن" وتواصل معنا مباشرة عبر WhatsApp مع رسالة طلبك الجاهزة لتأكيد التفعيل.',
+      title: 'اضغط "اطلب الآن"',
+      description: 'يتم تجهيز رسالة طلبك تلقائياً لفتح محادثة واتساب المباشرة معنا بنقرة واحدة.',
       icon: Send,
     },
     {
+      number: '03',
+      title: 'ادفع عبر BaridiMob أو CCP أو فليكسي',
+      description: 'نرسل لك رقم الحساب (RIP) أو رقم الهاتف لتحويل المبلغ بسهولة وإرسال صورة الوصل.',
+      icon: Smartphone,
+    },
+    {
       number: '04',
-      title: 'استلم اشتراكك مفعلاً',
-      description: 'يتم تأكيد الطلب وتفعيل اشتراكك في دقائق مع إرشادات مبسطة للاستخدام ودعم فني.',
+      title: 'استلم تفعيلك في دقائق',
+      description: 'يتم تفعيل اشتراكك فوراً مع إرشادات مبسطة وضمان كامل طيلة مدة الاشتراك.',
       icon: CheckCircle,
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-14 sm:py-20 bg-white border-b border-slate-200">
+    <section id="how-it-works" className="py-10 sm:py-16 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-slate-800 text-xs font-bold mb-3 border border-slate-200">
-            <span className="w-2 h-2 rounded-full bg-[#6cff76]"></span>
-            <span>خطوات بسيطة وسريعة</span>
+        <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-[11px] sm:text-xs font-bold mb-2.5 border border-slate-200">
+            <span className="w-2 h-2 rounded-full bg-[#006633]"></span>
+            <span>بسيطة ومباشرة</span>
           </div>
           <h2
             id="how-it-works-title"
-            className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight"
+            className="text-xl sm:text-3xl font-black text-slate-950 tracking-tight"
           >
             كيفاش تطلب اشتراكك في 4 خطوات؟
           </h2>
-          <p className="text-sm text-slate-500 mt-2 font-normal">
-            عملية طلب سهلة وبسيطة وسريعة بدون أي تعقيدات
+          <p className="text-xs sm:text-sm text-slate-500 mt-1.5 font-normal">
+            طلب فوري وتفعيل سريع بدون الحاجة لإنشاء حساب أو تعقيدات
           </p>
         </div>
 
         {/* 4 Steps Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {steps.map((step, idx) => {
             const Icon = step.icon;
-            const stepColors = [
-              { bg: 'bg-[#006633]', text: 'text-white', iconText: 'text-[#006633]' },
-              { bg: 'bg-[#6cff76]', text: 'text-[#003319]', iconText: 'text-[#006633]' },
-              { bg: 'bg-[#006633]', text: 'text-white', iconText: 'text-[#006633]' },
-              { bg: 'bg-[#008844]', text: 'text-white', iconText: 'text-[#008844]' },
-            ];
-            const color = stepColors[idx % stepColors.length];
 
             return (
               <div
                 key={step.number}
                 id={`step-card-${step.number}`}
-                className="relative bg-[#F1F5F9] hover:bg-slate-100 rounded-2xl p-6 border border-slate-200 hover:border-[#006633] transition-all flex flex-col justify-between yovo-card-hover"
+                className="bg-slate-50/80 hover:bg-slate-100/90 rounded-2xl p-5 sm:p-6 border border-slate-200/80 hover:border-[#006633] transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`w-10 h-10 rounded-xl ${color.bg} ${color.text} font-brand font-black text-sm flex items-center justify-center shadow-xs`}>
+                    <span className="w-9 h-9 rounded-xl bg-[#006633] text-white font-brand font-black text-sm flex items-center justify-center shadow-xs">
                       {step.number}
                     </span>
-                    <div className="p-2.5 rounded-xl bg-white shadow-2xs border border-slate-200">
-                      <Icon className={`w-4 h-4 ${color.iconText}`} />
+                    <div className="p-2 rounded-xl bg-white shadow-2xs border border-slate-200/80">
+                      <Icon className="w-4 h-4 text-[#006633]" />
                     </div>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-900 mb-1.5">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-1.5">
                     {step.title}
                   </h3>
 
@@ -87,8 +80,9 @@ export const HowItWorks: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 text-[11px] font-bold text-[#006633] border-t border-slate-200">
-                  خطوة {idx + 1} من 4
+                <div className="mt-4 pt-3 text-[11px] font-bold text-[#006633] border-t border-slate-200/60 flex items-center justify-between">
+                  <span>خطوة {idx + 1} من 4</span>
+                  <span className="text-slate-400 font-normal">تأكيد فوري</span>
                 </div>
               </div>
             );
@@ -99,4 +93,3 @@ export const HowItWorks: React.FC = () => {
     </section>
   );
 };
-

@@ -556,62 +556,100 @@ export function generateOrderId(): string {
 }
 
 export interface CreateOrderParams {
-  product?: Product;
   productId?: string;
+  product?: Product;
   productName?: string;
-  plan?: { id: string; duration: string; price: number | string; purchaseCost?: number; adCost?: number; otherCost?: number };
   planId?: string;
+  plan?: { id: string; duration?: string; price?: number | string; purchaseCost?: number; adCost?: number; otherCost?: number; [key: string]: any };
   planName?: string;
-  sellingPrice?: number;
-  currency?: string;
-  productCost?: number;
-  adCost?: number;
-  paymentFee?: number;
-  otherCosts?: number;
   customerInstagram?: string;
   customerPhone?: string;
   customerWhatsApp?: string;
   customerName?: string;
   landingPageId?: string;
   notes?: string;
+  clientRequestId?: string;
+  // Deprecated/ignored client financial params kept for backwards type compatibility
+  sellingPrice?: number;
+  currency?: string;
+  productCost?: number;
+  adCost?: number;
+  paymentFee?: number;
+  otherCosts?: number;
 }
 
 /**
- * Creates an order record with initial 'pending' status.
- * Used when a visitor clicks "اطلب الآن" / WhatsApp/Instagram order flow.
+ * Detects whether the current execution environment is Google AI Studio preview or local development,
+ * where Cloudflare Worker (/api/orders) is not running and Firebase Client SDK must be used directly.
  */
-export async function createPendingOrder(params: CreateOrderParams): Promise<Order> {
-  const orderId = generateOrderId();
-  const sellingPrice =
-    params.sellingPrice !== undefined
-      ? Number(params.sellingPrice)
-      : Number(params.plan?.price ?? params.product?.price) || 0;
+export function isPreviewEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) return true;
+  const host = (window.location.hostname || '').toLowerCase();
+  return (
+    host.includes('run.app') ||
+    host.includes('webcontainer') ||
+    host.includes('localhost') ||
+    host === '127.0.0.1' ||
+    host.includes('aistudio') ||
+    host.includes('googleusercontent.com')
+  );
+}
 
-  // Resolve plan or product-level default costs
-  const productCost =
-    params.productCost !== undefined
-      ? Number(params.productCost)
-      : Number(params.plan?.purchaseCost ?? params.product?.purchaseCost ?? 0);
-  const adCost =
-    params.adCost !== undefined
-      ? Number(params.adCost)
-      : Number(params.plan?.adCost ?? params.product?.adCost ?? 0);
-  const paymentFee = params.paymentFee !== undefined ? Number(params.paymentFee) : 0;
-  const otherCosts =
-    params.otherCosts !== undefined
-      ? Number(params.otherCosts)
-      : Number(params.plan?.otherCost ?? params.product?.otherCosts ?? 0);
+/**
+ * Creates an order record with initial 'pending' status directly in Firestore via Firebase Client SDK.
+ * Used in Google AI Studio preview and local development environments.
+ */
+async function createPendingOrderViaFirebaseSDK(params: CreateOrderParams): Promise<Order> {
+  const cleanProductId = (params.productId || params.product?.id || '').trim();
+  if (!cleanProductId) {
+    throw new Error('معرّف المنتج مطلوب لتسجيل الطلب.');
+  }
+
+  // Look up product to resolve reliable price and plan details
+  const prod = params.product || getLocalProducts().find((p) => p.id === cleanProductId);
+  let cleanPlanId = (params.planId || params.plan?.id || '').trim();
+  let targetPlan = params.plan;
+
+  if (!targetPlan && prod?.plans && cleanPlanId) {
+    targetPlan = prod.plans.find((p) => p.id === cleanPlanId);
+  }
+  if (!targetPlan && prod?.plans && prod.plans.length > 0) {
+    targetPlan = prod.plans[0];
+    cleanPlanId = targetPlan.id;
+  }
+
+  // Calculate pricing & finances authoritatively
+  const rawPrice =
+    targetPlan?.price !== undefined && targetPlan?.price !== ''
+      ? targetPlan.price
+      : prod?.price !== undefined
+      ? prod.price
+      : params.sellingPrice || 0;
+
+  const sellingPrice = Number(rawPrice) || 0;
+  const productCost = Number(targetPlan?.purchaseCost ?? params.productCost ?? prod?.purchaseCost ?? 0);
+  const adCost = Number(targetPlan?.adCost ?? params.adCost ?? prod?.adCost ?? 0);
+  const paymentFee = Number(params.paymentFee ?? 0);
+  const otherCosts = Number(targetPlan?.otherCost ?? params.otherCosts ?? prod?.otherCosts ?? 0);
   const totalCost = productCost + adCost + paymentFee + otherCosts;
   const profit = sellingPrice - totalCost;
+  const currency = params.currency || prod?.currency || 'دج';
 
+  const orderId = generateOrderId();
+  const phone = (params.customerPhone || params.customerWhatsApp || '').trim();
+  const whatsapp = (params.customerWhatsApp || phone).trim();
+  const clientRequestId =
+    params.clientRequestId?.trim() ||
+    `req_${Date.now()}_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 6)}`;
   const nowIso = new Date().toISOString();
 
-  const newOrder: Order = {
+  const firestoreData = sanitizeForFirestore({
     id: orderId,
-    productId: params.productId || params.product?.id || 'unknown',
-    productName: params.productName || params.product?.name || 'اشتراك رقمي',
-    planId: params.planId || params.plan?.id || 'default',
-    planName: params.planName || params.plan?.duration || params.product?.duration || 'شهري',
+    productId: cleanProductId,
+    productName: params.productName || prod?.name || 'اشتراك رقمي',
+    planId: cleanPlanId || 'default',
+    planName: params.planName || targetPlan?.duration || 'شهري',
     sellingPrice,
     productCost,
     adCost,
@@ -619,67 +657,309 @@ export async function createPendingOrder(params: CreateOrderParams): Promise<Ord
     otherCosts,
     totalCost,
     profit,
-    customerInstagram: params.customerInstagram?.trim() || '',
-    customerPhone: params.customerPhone?.trim() || params.customerWhatsApp?.trim() || '',
-    customerWhatsApp: params.customerWhatsApp?.trim() || params.customerPhone?.trim() || '',
-    customerName: params.customerName?.trim() || '',
-    notes: params.notes?.trim() || '',
+    currency,
     status: 'pending',
-    landingPageId: params.landingPageId || '',
-    currency: params.currency || params.product?.currency || 'دج',
+    customerPhone: phone,
+    customerWhatsApp: whatsapp,
+    customerInstagram: (params.customerInstagram || '').trim(),
+    customerName: (params.customerName || '').trim(),
+    landingPageId: (params.landingPageId || '').trim(),
+    notes: (params.notes || '').trim(),
+    clientRequestId,
+    createdAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+    updatedAt: isFirebaseConfigured ? serverTimestamp() : nowIso,
+  });
+
+  if (db && isFirebaseConfigured) {
+    try {
+      await setDoc(doc(db, 'orders', orderId), firestoreData);
+    } catch (fsErr: any) {
+      console.error('Direct Firestore order creation failed in preview:', fsErr);
+      handleFirestoreError(fsErr, OperationType.CREATE, `orders/${orderId}`);
+      throw new Error('تعذر تسجيل الطلب في قاعدة البيانات. يرجى التحقق من اتصالك والمحاولة مجدداً.');
+    }
+  } else {
+    const local = getLocalOrders();
+    local.unshift({
+      ...firestoreData,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    } as Order);
+    saveLocalOrders(local);
+  }
+
+  const confirmedOrder: Order = {
+    id: orderId,
+    productId: cleanProductId,
+    productName: params.productName || prod?.name || 'اشتراك رقمي',
+    planId: cleanPlanId || 'default',
+    planName: params.planName || targetPlan?.duration || 'شهري',
+    sellingPrice,
+    productCost,
+    adCost,
+    paymentFee,
+    otherCosts,
+    totalCost,
+    profit,
+    currency,
+    status: 'pending',
+    customerPhone: phone,
+    customerWhatsApp: whatsapp,
+    customerInstagram: (params.customerInstagram || '').trim(),
+    customerName: (params.customerName || '').trim(),
+    landingPageId: (params.landingPageId || '').trim(),
+    notes: (params.notes || '').trim(),
     createdAt: nowIso,
     updatedAt: nowIso,
   };
 
-  if (db && isFirebaseConfigured) {
-    const firestorePayload = sanitizeForFirestore({
-      id: newOrder.id,
-      productId: newOrder.productId,
-      productName: newOrder.productName,
-      planId: newOrder.planId,
-      planName: newOrder.planName,
-      sellingPrice: newOrder.sellingPrice,
-      productCost: newOrder.productCost,
-      adCost: newOrder.adCost,
-      paymentFee: newOrder.paymentFee,
-      otherCosts: newOrder.otherCosts,
-      totalCost: newOrder.totalCost,
-      profit: newOrder.profit,
-      customerInstagram: newOrder.customerInstagram,
-      customerPhone: newOrder.customerPhone,
-      customerWhatsApp: newOrder.customerWhatsApp,
-      customerName: newOrder.customerName,
-      notes: newOrder.notes,
-      status: 'pending',
-      landingPageId: newOrder.landingPageId,
-      currency: newOrder.currency,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
+  return confirmedOrder;
+}
 
-    try {
-      await setDoc(doc(db, 'orders', orderId), firestorePayload);
-      console.log('REAL FIRESTORE ORDER CREATED SUCCESSFULLY at orders/' + orderId);
-    } catch (error: any) {
-      console.error('REAL FIRESTORE ORDER CREATION FAILED:', {
-        errorCode: error?.code,
-        errorMessage: error?.message,
-        firestorePath: `orders/${orderId}`,
-        operation: 'create',
-        payload: firestorePayload,
-      });
-      // CRITICAL: Stop silent fallback to localStorage.
-      // Firestore is the sole source of truth in production.
-      throw error;
-    }
+/**
+ * Resolves the configured order backend strategy:
+ * - 'worker-api': Authoritative Cloudflare Worker API (staging or production).
+ * - 'direct-firestore': Direct client Firestore creation.
+ */
+export function getOrderBackendStrategy(): 'worker-api' | 'direct-firestore' {
+  const configuredBackend = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ORDER_BACKEND
+    ? import.meta.env.VITE_ORDER_BACKEND
+    : ''
+  ).trim().toLowerCase();
+  if (configuredBackend === 'worker-api') {
+    return 'worker-api';
+  }
+  if (configuredBackend === 'direct-firestore') {
+    return 'direct-firestore';
   }
 
-  // Update local cache ONLY when write succeeds
-  const local = getLocalOrders();
-  local.unshift(newOrder);
-  saveLocalOrders(local);
+  // If VITE_ORDER_API_BASE_URL is set, default to worker-api
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ORDER_API_BASE_URL?.trim()) {
+    return 'worker-api';
+  }
 
-  return newOrder;
+  // If not in preview (i.e. on production Cloudflare host), default to worker-api
+  if (!isPreviewEnvironment()) {
+    return 'worker-api';
+  }
+
+  // Fallback in preview when no backend or staging URL is configured
+  return 'direct-firestore';
+}
+
+/**
+ * Resolves the order creation endpoint URL.
+ * When VITE_ORDER_API_BASE_URL is configured, builds:
+ * `${VITE_ORDER_API_BASE_URL}/api/orders`
+ * When not configured, returns '/api/orders'.
+ */
+export function getOrderApiEndpoint(): string {
+  const rawBase = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ORDER_API_BASE_URL
+    ? import.meta.env.VITE_ORDER_API_BASE_URL
+    : ''
+  ).trim();
+  if (rawBase) {
+    const cleanBase = rawBase.replace(/\/+$/, '');
+    return `${cleanBase}/api/orders`;
+  }
+  // In Google AI Studio preview, if worker-api backend is enabled, default to the existing deployed Worker:
+  if (isPreviewEnvironment() && getOrderBackendStrategy() === 'worker-api') {
+    return 'https://yovo.to-business04.workers.dev/api/orders';
+  }
+  return '/api/orders';
+}
+
+/**
+ * Creates an order record with initial 'pending' status.
+ * Supports configurable worker-api backend with VITE_ORDER_API_BASE_URL,
+ * or direct Firebase Client SDK.
+ */
+export async function createPendingOrder(params: CreateOrderParams): Promise<Order> {
+  // 1. Offline connection check
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new Error('لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك والمحاولة مجدداً.');
+  }
+
+  const backendStrategy = getOrderBackendStrategy();
+
+  // 2. Direct Firestore flow (only if strategy is explicitly direct-firestore)
+  if (backendStrategy === 'direct-firestore') {
+    return createPendingOrderViaFirebaseSDK(params);
+  }
+
+  // 3. Worker API Flow (when backendStrategy is 'worker-api')
+  const endpoint = getOrderApiEndpoint();
+
+  // Safety check: if in preview mode and endpoint is relative '/api/orders' without worker base URL:
+  if (isPreviewEnvironment() && endpoint === '/api/orders') {
+    throw new Error(
+      'تم تفعيل خيار خادم الطلبات (VITE_ORDER_BACKEND=worker-api) ولكن لم يتم تحديد عنوان خادم الطلبات VITE_ORDER_API_BASE_URL.'
+    );
+  }
+
+  // 4. Validate and extract required product identifier (Production & Staging API flow)
+  const cleanProductId = (params.productId || params.product?.id || '').trim();
+  if (!cleanProductId) {
+    throw new Error('معرّف المنتج مطلوب لتسجيل الطلب.');
+  }
+
+  // 5. Extract optional plan identifier
+  const cleanPlanId = (params.planId || params.plan?.id || '').trim() || undefined;
+
+  // 6. Generate or reuse cryptographic client request ID for robust idempotency
+  const clientRequestId =
+    params.clientRequestId?.trim() ||
+    `req_${Date.now()}_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 6)}`;
+
+  // 7. Construct strict allowlist payload for the server
+  // Absolute financial isolation: NO sellingPrice, productCost, profit or status sent from browser!
+  const apiPayload: Record<string, string> = {
+    productId: cleanProductId,
+    clientRequestId,
+  };
+
+  if (cleanPlanId) {
+    apiPayload.planId = cleanPlanId;
+  }
+
+  const phone = (params.customerPhone || params.customerWhatsApp || '').trim();
+  if (phone) {
+    apiPayload.customerPhone = phone;
+    apiPayload.customerWhatsApp = (params.customerWhatsApp || phone).trim();
+  }
+
+  if (params.customerInstagram?.trim()) {
+    apiPayload.customerInstagram = params.customerInstagram.trim();
+  }
+  if (params.customerName?.trim()) {
+    apiPayload.customerName = params.customerName.trim();
+  }
+  if (params.landingPageId?.trim()) {
+    apiPayload.landingPageId = params.landingPageId.trim();
+  }
+  if (params.notes?.trim()) {
+    apiPayload.notes = params.notes.trim();
+  }
+
+  // 8. Network request with timeout (15 seconds)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-Request-Id': clientRequestId,
+        'Idempotency-Key': clientRequestId,
+      },
+      body: JSON.stringify(apiPayload),
+      signal: controller.signal,
+    });
+  } catch (fetchErr: any) {
+    if (fetchErr?.name === 'AbortError') {
+      throw new Error(
+        'استغرقت الاستجابة وقتاً أطول من المتوقع. يرجى التحقق من اتصالك أو التواصل معنا مباشرة عبر واتساب للتأكيد.'
+      );
+    }
+    // CRITICAL: Fail explicitly without falling back to Firebase direct writes!
+    throw new Error('تعذر الاتصال بخدمة الطلبات. يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.');
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  // 9. Parse and validate JSON response
+  let result: any;
+  const contentType = (response.headers.get('content-type') || '').toLowerCase();
+  try {
+    if (contentType.includes('text/html')) {
+      throw new Error('HTML_RESPONSE');
+    }
+    result = await response.json();
+  } catch (parseErr: any) {
+    if (parseErr?.message === 'HTML_RESPONSE') {
+      throw new Error('استجابة غير صالحة من خادم الطلبات: استلم المتصفح صفحة HTML بدلاً من استجابة JSON.');
+    }
+    // CRITICAL: Fail explicitly without falling back to Firebase direct writes!
+    throw new Error('استجابة غير صالحة من خادم الطلبات.');
+  }
+
+  // 10. Handle HTTP and application errors with clear Arabic messages
+  if (!response.ok || !result || result.success !== true) {
+    const status = response.status;
+    let errorMessage = result?.error;
+
+    if (!errorMessage) {
+      if (status === 400) {
+        errorMessage = 'بيانات الطلب غير صالحة. يرجى إعادة اختيار الخطة والمحاولة ثانية.';
+      } else if (status === 403) {
+        errorMessage = 'غير مصرح بالوصول إلى خدمة الطلبات (CORS/Forbidden).';
+      } else if (status === 404) {
+        errorMessage = 'الاشتراك أو الخطة المحددة غير متوفرة حالياً.';
+      } else if (status === 429) {
+        errorMessage = 'تم تجاوز عدد محاولات الطلب مؤقتاً. يرجى الانتظار دقيقة والمحاولة ثانية.';
+      } else if (status === 502 || status === 503) {
+        errorMessage = 'خدمة تسجيل الطلبات غير متوفرة مؤقتاً. يرجى المحاولة بعد قليل أو التواصل عبر واتساب.';
+      } else {
+        errorMessage = 'حدث خطأ غير متوقع أثناء معالجة الطلب. يرجى المحاولة لاحقاً.';
+      }
+    }
+    // CRITICAL: Fail explicitly without falling back to Firebase direct writes!
+    throw new Error(errorMessage);
+  }
+
+  // 9. Confirm valid server order ID
+  const orderId = result.orderId;
+  if (!orderId || typeof orderId !== 'string') {
+    throw new Error('لم يتم استلام معرّف طلب صالح ومؤكد من الخادم.');
+  }
+
+  // 10. Construct fully typed Order object from server-calculated data
+  const serverOrder = result.order || {};
+  const confirmedOrder: Order = {
+    id: orderId,
+    productId: serverOrder.productId || result.productId || cleanProductId,
+    productName:
+      serverOrder.productName ||
+      result.productName ||
+      params.productName ||
+      params.product?.name ||
+      'اشتراك رقمي',
+    planId: serverOrder.planId || result.planId || cleanPlanId || 'default',
+    planName:
+      serverOrder.planName ||
+      result.planName ||
+      params.planName ||
+      params.plan?.duration ||
+      'شهري',
+    sellingPrice:
+      typeof serverOrder.sellingPrice === 'number'
+        ? serverOrder.sellingPrice
+        : Number(result.sellingPrice) || 0,
+    productCost: typeof serverOrder.productCost === 'number' ? serverOrder.productCost : 0,
+    adCost: typeof serverOrder.adCost === 'number' ? serverOrder.adCost : 0,
+    paymentFee: typeof serverOrder.paymentFee === 'number' ? serverOrder.paymentFee : 0,
+    otherCosts: typeof serverOrder.otherCosts === 'number' ? serverOrder.otherCosts : 0,
+    totalCost: typeof serverOrder.totalCost === 'number' ? serverOrder.totalCost : 0,
+    profit: typeof serverOrder.profit === 'number' ? serverOrder.profit : 0,
+    currency: serverOrder.currency || result.currency || params.currency || params.product?.currency || 'دج',
+    status: 'pending',
+    customerPhone: serverOrder.customerPhone || apiPayload.customerPhone || '',
+    customerWhatsApp: serverOrder.customerWhatsApp || apiPayload.customerWhatsApp || '',
+    customerInstagram: serverOrder.customerInstagram || apiPayload.customerInstagram || '',
+    customerName: serverOrder.customerName || apiPayload.customerName || '',
+    landingPageId: serverOrder.landingPageId || apiPayload.landingPageId || '',
+    notes: serverOrder.notes || apiPayload.notes || '',
+    createdAt: serverOrder.createdAt || new Date().toISOString(),
+    updatedAt: serverOrder.updatedAt || new Date().toISOString(),
+  };
+
+  // NOTE: Public checkout writes to localStorage (yovo_orders_cache) are intentionally removed
+  // for strict customer privacy and zero unencrypted client-side state pollution.
+  // The admin dashboard uses authorized real-time Firestore subscriptions via subscribeOrders().
+
+  return confirmedOrder;
 }
 
 /**

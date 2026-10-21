@@ -2,12 +2,9 @@ import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ProductCatalog } from './components/ProductCatalog';
-import { WhyYovo } from './components/WhyYovo';
+import { PaymentInfo } from './components/PaymentInfo';
 import { HowItWorks } from './components/HowItWorks';
-import { TrustSection } from './components/TrustSection';
-import { Testimonials } from './components/Testimonials';
 import { FAQ } from './components/FAQ';
-import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
 import { initialProducts } from './data/products';
 import {
@@ -16,9 +13,10 @@ import {
   getOrderPlatformUrl,
   generateOrderMessage,
   buildWhatsAppOrderUrl,
+  openWhatsAppSafely,
   isWhatsAppPlatform,
 } from './config';
-import { Product, ProductPlan, Category, StoreConfig, LandingPage } from './types';
+import { Product, ProductPlan, Category, StoreConfig, LandingPage, Order } from './types';
 import {
   subscribeProducts,
   subscribeCategories,
@@ -27,14 +25,12 @@ import {
   createPendingOrder,
   defaultCategories,
 } from './services/storeService';
-import { copyTextToClipboard } from './lib/clipboard';
-import {
-  OrderConfirmationToast,
-  OrderConfirmationData,
-} from './components/common/OrderConfirmationToast';
 import { Send, AlertCircle, X } from 'lucide-react';
 
 // Code-split heavy non-critical and route-specific modules
+const QuickOrderModal = React.lazy(() =>
+  import('./components/QuickOrderModal').then((m) => ({ default: m.QuickOrderModal }))
+);
 const ProductModal = React.lazy(() =>
   import('./components/ProductModal').then((m) => ({ default: m.ProductModal }))
 );
@@ -93,8 +89,10 @@ function MainStorefront() {
   const [landingPages, setLandingPages] = useState<LandingPage[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan | undefined>(undefined);
+  const [quickOrderProduct, setQuickOrderProduct] = useState<Product | null>(null);
+  const [quickOrderPlan, setQuickOrderPlan] = useState<ProductPlan | undefined>(undefined);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
-  const [orderToastData, setOrderToastData] = useState<OrderConfirmationData | null>(null);
+  const [isOrdering, setIsOrdering] = useState<boolean>(false);
   const [orderErrorMessage, setOrderErrorMessage] = useState<string | null>(null);
 
   // Anti-duplicate click cache for pending orders
@@ -201,33 +199,78 @@ function MainStorefront() {
     setSelectedPlan(plan);
   };
 
-  // When clicking "اطلب الآن" on card or inside modal
+  // When clicking "اطلب الآن" on product card
+  const handleOpenQuickOrder = (product: Product, plan?: ProductPlan) => {
+    setQuickOrderProduct(product);
+    setQuickOrderPlan(plan);
+  };
+
+  // Ensure that returning from WhatsApp (via back button, tab switch, or bfcache)
+  // always keeps the customer in the clean store state without stuck modals
+  useEffect(() => {
+    const handleReturnToStore = () => {
+      setSelectedProduct(null);
+      setSelectedPlan(undefined);
+      setQuickOrderProduct(null);
+      setQuickOrderPlan(undefined);
+      setIsOrdering(false);
+      setIsContactOpen(false);
+      setOrderErrorMessage(null);
+    };
+
+    window.addEventListener('pageshow', handleReturnToStore);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        handleReturnToStore();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('pageshow', handleReturnToStore);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, []);
+
+  // When clicking "اطلب عبر واتساب" on card, inside quick order, or inside modal
   const handleOrderNow = async (product: Product, plan?: ProductPlan) => {
     if (!product.available) return;
+
+    // Resolve target plan (passed plan or first plan)
+    const targetPlan =
+      plan || (product.plans && product.plans.length > 0 ? product.plans[0] : undefined);
+
+    // Prevent multiple rapid clicks from creating duplicate orders
+    const now = Date.now();
+    const orderKey = `${product.id}-${targetPlan?.id || 'default'}`;
+    if (
+      isOrdering ||
+      (lastOrderClickRef.current[orderKey] && now - lastOrderClickRef.current[orderKey] < 2500)
+    ) {
+      return;
+    }
+    lastOrderClickRef.current[orderKey] = now;
+    setIsOrdering(true);
+    setOrderErrorMessage(null);
 
     // Trigger Meta Pixel Contact Event safely
     if (typeof window.fbq === 'function') {
       window.fbq('track', 'Contact');
     }
 
-    // Resolve target plan (passed plan or first plan)
-    const targetPlan =
-      plan || (product.plans && product.plans.length > 0 ? product.plans[0] : undefined);
-
-    setOrderErrorMessage(null);
-
-    // 1. Create a Pending Order in Firestore FIRST (Firestore is source of truth)
+    // 1. Create a Pending Order via Secure Order API (Server-side price & integrity)
+    let createdOrder: Order;
     try {
-      await createPendingOrder({
+      createdOrder = await createPendingOrder({
         product,
         plan: targetPlan,
       });
     } catch (err: any) {
-      console.error('Real order creation failed in Firestore. Aborting order flow:', err);
+      console.error('Real order creation failed via API. Aborting order flow:', err);
       setOrderErrorMessage(
-        'تعذر تسجيل الطلب في قاعدة البيانات حالياً. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرة.'
+        err?.message || 'تعذر تسجيل الطلب في قاعدة البيانات حالياً. يرجى التحقق من اتصالك والمحاولة مجدداً.'
       );
-      // DO NOT open Instagram or pretend order was successfully registered!
+      setIsOrdering(false);
       return;
     }
 
@@ -239,60 +282,24 @@ function MainStorefront() {
       product.currency || settings.currency
     );
 
-    // Resolve primary order platform dynamically (WhatsApp or configured primary)
+    // Resolve WhatsApp order platform from store settings
     const primaryPlatform = getPrimaryOrderPlatform(settings);
-    const isWhatsApp = isWhatsAppPlatform(primaryPlatform);
+    const whatsappTarget = primaryPlatform?.url || settings.whatsappUrl || '213549759489';
+    const orderUrl = buildWhatsAppOrderUrl(whatsappTarget, orderMessage);
 
-    const orderUrl = primaryPlatform
-      ? isWhatsApp
-        ? buildWhatsAppOrderUrl(primaryPlatform.url, orderMessage)
-        : getOrderPlatformUrl(primaryPlatform.url)
-      : buildWhatsAppOrderUrl('213549759489', orderMessage);
+    // 3. Immediately close modals and reset modal state BEFORE navigating
+    // so when returning to website, the customer is immediately back in the clean store
+    setSelectedProduct(null);
+    setSelectedPlan(undefined);
+    setQuickOrderProduct(null);
+    setQuickOrderPlan(undefined);
+    setIsOrdering(false);
 
-    const platformName = primaryPlatform?.name || (isWhatsApp ? 'WhatsApp' : 'واتساب');
-    const platformIcon = isWhatsApp ? 'whatsapp' : (primaryPlatform?.icon || 'whatsapp');
-
-    // 2. Open the WhatsApp/order destination immediately within direct user click gesture
-    let windowOpened = false;
+    // 4. Safely open WhatsApp externally without navigating the iframe
+    // (Prevents "wa.me refused to connect" and keeps the store ready upon return)
     if (orderUrl) {
-      try {
-        const opened = window.open(orderUrl, '_blank', 'noopener,noreferrer');
-        if (opened) {
-          windowOpened = true;
-        }
-      } catch (err) {
-        console.warn('Direct window.open failed:', err);
-      }
+      openWhatsAppSafely(orderUrl);
     }
-
-    // 3. Copy the generated message to the user's clipboard as a backup
-    let copied = false;
-    try {
-      if (
-        typeof navigator !== 'undefined' &&
-        navigator.clipboard &&
-        typeof navigator.clipboard.writeText === 'function'
-      ) {
-        await navigator.clipboard.writeText(orderMessage);
-        copied = true;
-      } else {
-        copied = await copyTextToClipboard(orderMessage);
-      }
-    } catch (err) {
-      console.warn('Direct clipboard write failed, trying fallback copy:', err);
-      copied = await copyTextToClipboard(orderMessage);
-    }
-
-    // 4. Always show the toast notification with an interactive, direct button to open WhatsApp
-    setOrderToastData({
-      productName: product.name,
-      orderMessage,
-      platformName,
-      platformUrl: orderUrl,
-      platformIcon: typeof platformIcon === 'string' ? platformIcon : 'whatsapp',
-      copiedSuccessfully: copied,
-      windowOpened,
-    });
   };
 
   // Render Admin View if on /admin (Lazy loaded with isolated AdminAuthProvider)
@@ -353,7 +360,7 @@ function MainStorefront() {
 
       {/* Main Landing Page Content */}
       <main className="flex-1">
-        <Hero onOpenContact={() => setIsContactOpen(true)} products={products} />
+        <Hero onOpenContact={() => setIsContactOpen(true)} />
 
         <ProductCatalog
           products={products}
@@ -364,21 +371,40 @@ function MainStorefront() {
             setProductsError(null);
           }}
           onSelectProduct={handleSelectProduct}
-          onOrderNow={handleOrderNow}
+          onOrderNow={handleOpenQuickOrder}
         />
 
-        <WhyYovo />
+        <PaymentInfo />
         <HowItWorks />
-        <TrustSection />
-        <Testimonials />
         <FAQ onOpenContact={() => setIsContactOpen(true)} />
-        <FinalCTA onOpenContact={() => setIsContactOpen(true)} />
       </main>
 
       {/* Footer */}
       <Footer
         settings={settings}
       />
+
+      {/* Quick Order Modal - Instant ordering directly from cards */}
+      {quickOrderProduct && (
+        <Suspense fallback={null}>
+          <QuickOrderModal
+            product={quickOrderProduct}
+            initialPlan={quickOrderPlan}
+            settings={settings}
+            isOrdering={isOrdering}
+            onClose={() => {
+              setQuickOrderProduct(null);
+              setQuickOrderPlan(undefined);
+            }}
+            onOrderNow={handleOrderNow}
+            onViewDetails={(prod, plan) => {
+              setQuickOrderProduct(null);
+              setSelectedProduct(prod);
+              setSelectedPlan(plan);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Product Details & Ordering Modal - Loaded on demand */}
       {selectedProduct && (
@@ -387,6 +413,7 @@ function MainStorefront() {
             product={selectedProduct}
             initialPlan={selectedPlan}
             settings={settings}
+            isOrdering={isOrdering}
             onClose={() => {
               setSelectedProduct(null);
               setSelectedPlan(undefined);
@@ -395,12 +422,6 @@ function MainStorefront() {
           />
         </Suspense>
       )}
-
-      {/* Dynamic Order Confirmation Toast */}
-      <OrderConfirmationToast
-        data={orderToastData}
-        onClose={() => setOrderToastData(null)}
-      />
 
       {/* Order Creation Failure Toast */}
       {orderErrorMessage && (

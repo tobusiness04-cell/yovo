@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ArrowUpLeft, Clock, ShieldCheck, Sparkles, AlertCircle, ShoppingBag, Eye } from 'lucide-react';
+import React from 'react';
+import { ArrowUpLeft, AlertCircle } from 'lucide-react';
 import { Product, ProductPlan } from '../types';
 import { formatPrice } from '../lib/formatters';
 import { BrandArtwork } from './common/BrandArtwork';
+import { SocialIcon } from './common/SocialIcon';
 
 interface ProductCardProps {
   product: Product;
@@ -15,7 +16,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onSelectProduct,
   onOrderNow,
 }) => {
-  // Primary plan or first plan
+  // Determine available plans and starting price
+  const availablePlans = (product.plans && product.plans.length > 0)
+    ? product.plans.filter((p) => p.available !== false)
+    : [];
+
   const defaultPlan = (product.plans && product.plans.length > 0)
     ? product.plans[0]
     : {
@@ -25,132 +30,120 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         available: product.available,
       };
 
-  const isAvailable = product.available && defaultPlan.available !== false;
-  const displayPrice = typeof defaultPlan.price === 'number' ? defaultPlan.price : product.price;
-  const displayDuration = defaultPlan.duration || product.duration || 'شهري';
-  const hasMultiplePlans = product.plans && product.plans.length > 1;
+  const isAvailable = product.available && (availablePlans.length > 0 || (product.plans || []).length === 0);
+  const hasMultiplePlans = (product.plans && product.plans.length > 1);
+
+  // Compute lowest starting price
+  let minPrice = typeof product.price === 'number' ? product.price : 0;
+  if (product.plans && product.plans.length > 0) {
+    const prices = product.plans
+      .map((p) => (typeof p.price === 'number' ? p.price : null))
+      .filter((p): p is number => p !== null);
+    if (prices.length > 0) {
+      minPrice = Math.min(...prices);
+    }
+  }
+
+  const currency = product.currency || 'دج';
 
   return (
     <div
       id={`product-card-${product.id}`}
-      className={`group relative bg-white rounded-2xl border border-slate-200 transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden yovo-card-hover hover:border-[#006633] hover:shadow-xl hover:shadow-[#006633]/10 ${
-        product.popular ? 'ring-1 ring-[#006633]/25' : ''
-      } ${!isAvailable ? 'opacity-85' : ''}`}
+      className={`group bg-white rounded-2xl border border-slate-200 transition-all duration-200 flex flex-col justify-between overflow-hidden hover:border-[#006633] hover:shadow-lg ${
+        !isAvailable ? 'opacity-80' : ''
+      }`}
     >
-      {/* Clickable Header & Image Container */}
+      {/* Clickable Card Upper Area */}
       <div
         className="cursor-pointer"
         onClick={() => onSelectProduct(product, defaultPlan)}
       >
-        {/* Top Product Artwork Container */}
-        <div className="relative aspect-[16/11] sm:aspect-[4/3] w-full overflow-hidden bg-slate-50">
+        {/* Product Artwork Container */}
+        <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-slate-50 border-b border-slate-100">
           <BrandArtwork product={product} />
 
-          {/* Badges Overlaid on Artwork */}
-          <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-20">
-            {/* Left: Category Tag */}
-            <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-slate-800 shadow-2xs backdrop-blur-xs border border-slate-200/70">
+          {/* Minimal Status or Category Tag */}
+          <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-10">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-slate-800 shadow-2xs backdrop-blur-xs border border-slate-200/80">
               {product.category}
             </span>
 
-            {/* Right: Status or Popular Badge */}
-            <div>
-              {!isAvailable ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/80 text-white text-[10px] font-bold backdrop-blur-xs">
-                  <AlertCircle className="w-3 h-3 text-slate-400" />
-                  غير متوفر
-                </span>
-              ) : product.popular ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#6cff76] text-[#003319] text-[10px] font-black shadow-xs">
-                  <Sparkles className="w-3 h-3 text-[#003319]" />
-                  الأكثر طلباً
-                </span>
-              ) : product.activationTime ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-medium backdrop-blur-xs">
-                  <Clock className="w-2.5 h-2.5 text-[#6cff76]" />
-                  سريع
-                </span>
-              ) : null}
-            </div>
+            {!isAvailable && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/85 text-white text-[10px] font-bold backdrop-blur-xs">
+                <AlertCircle className="w-3 h-3 text-red-400" />
+                غير متوفر
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Card Body Info */}
+        {/* Product Information */}
         <div className="p-3.5 sm:p-4 text-right">
-          {/* Product Name */}
-          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug truncate group-hover:text-[#006633] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-slate-950 leading-snug truncate group-hover:text-[#006633] transition-colors">
             {product.name}
           </h3>
 
-          {/* Short Description */}
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1 line-clamp-1 font-normal leading-relaxed">
             {product.description}
           </p>
 
-          {/* Pricing Block */}
-          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-baseline justify-between">
+          {/* Starting Price Display */}
+          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-baseline justify-between">
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-slate-400 font-medium">
-                {hasMultiplePlans ? 'من' : ''}
-              </span>
+              {hasMultiplePlans && (
+                <span className="text-[11px] text-slate-500 font-medium">ابتداءً من</span>
+              )}
               <span className="text-base sm:text-lg font-black text-slate-950 font-brand tracking-tight">
-                {formatPrice(displayPrice, product.currency || 'دج')}
+                {formatPrice(minPrice, currency)}
               </span>
-              <span className="text-[10px] sm:text-xs text-slate-500 font-medium">
-                / {displayDuration}
-              </span>
+              {!hasMultiplePlans && defaultPlan.duration && (
+                <span className="text-[11px] text-slate-500">/ {defaultPlan.duration}</span>
+              )}
             </div>
 
             {hasMultiplePlans && (
               <span className="text-[10px] font-bold text-[#006633] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                خطط متعددة
+                {product.plans!.length} خطط
               </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Card Action Buttons (Responsive for Mobile & Desktop) */}
-      <div className="p-3 sm:p-4 pt-0">
-        {/* On Mobile: Dual compact actions or prominent primary CTA */}
-        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-          <button
-            id={`view-details-${product.id}`}
-            type="button"
-            onClick={() => onSelectProduct(product, defaultPlan)}
-            className="w-full py-2 px-2 rounded-xl text-[11px] sm:text-xs font-bold text-slate-800 bg-[#F1F5F9] hover:bg-slate-200 transition-colors text-center cursor-pointer border border-slate-200 active:scale-95 flex items-center justify-center gap-1"
-          >
-            <Eye className="w-3 h-3 text-slate-500" />
-            <span>التفاصيل</span>
-          </button>
+      {/* Card Actions: Primary Order Button + Secondary Details Link */}
+      <div className="p-3 sm:p-4 pt-0 space-y-1.5">
+        {/* 1. Primary Order Button (Most prominent interactive element) */}
+        <button
+          id={`order-btn-${product.id}`}
+          type="button"
+          disabled={!isAvailable}
+          onClick={() => onOrderNow(product, defaultPlan)}
+          className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 ${
+            isAvailable
+              ? 'bg-gradient-to-r from-[#006633] to-[#008844] text-white hover:opacity-95 shadow-xs shadow-[#006633]/25'
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+          }`}
+        >
+          {isAvailable ? (
+            <>
+              <SocialIcon icon="whatsapp" className="w-3.5 h-3.5 text-white" />
+              <span>اطلب الآن</span>
+              <ArrowUpLeft className="w-3 h-3" />
+            </>
+          ) : (
+            <span>نفد حالياً</span>
+          )}
+        </button>
 
-          <button
-            id={`order-btn-${product.id}`}
-            type="button"
-            disabled={!isAvailable}
-            onClick={() => {
-              if (typeof window.fbq === 'function') {
-                window.fbq('track', 'Contact');
-              }
-              onOrderNow(product, defaultPlan);
-            }}
-            className={`w-full py-2 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 ${
-              isAvailable
-                ? 'bg-gradient-to-r from-[#006633] to-[#008844] text-white hover:opacity-95 shadow-sm shadow-[#006633]/20'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-            }`}
-          >
-            {isAvailable ? (
-              <>
-                <ShoppingBag className="w-3 h-3" />
-                <span>اطلب الآن</span>
-                <ArrowUpLeft className="w-3 h-3" />
-              </>
-            ) : (
-              <span>نفد</span>
-            )}
-          </button>
-        </div>
+        {/* 2. Secondary Details Button (Visually secondary) */}
+        <button
+          id={`view-details-${product.id}`}
+          type="button"
+          onClick={() => onSelectProduct(product, defaultPlan)}
+          className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006633] hover:underline transition-colors cursor-pointer"
+        >
+          التفاصيل
+        </button>
       </div>
     </div>
   );

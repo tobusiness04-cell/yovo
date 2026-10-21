@@ -187,15 +187,6 @@ export interface FAQItem {
   answer: string;
 }
 
-export interface TestimonialItem {
-  id: string;
-  customerName: string;
-  service: string;
-  text: string;
-  date?: string;
-  isPlaceholderNote?: string;
-}
-
 declare global {
   interface Window {
     fbq?: (action: string, eventName: string, params?: Record<string, unknown>) => void;

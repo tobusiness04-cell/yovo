@@ -1,7 +1,7 @@
 import React from 'react';
 import { StoreConfig } from '../types';
 import { storeConfig, getEnabledSocialPlatforms, getOrderPlatformUrl } from '../config';
-import { ArrowUpLeft, Star } from 'lucide-react';
+import { Smartphone, Building2, Zap } from 'lucide-react';
 import { SocialIcon } from './common/SocialIcon';
 
 interface FooterProps {
@@ -14,141 +14,89 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
   const enabledPlatforms = getEnabledSocialPlatforms(currentSettings);
 
   return (
-    <footer id="footer" className="bg-[#071E12] text-white border-t border-emerald-950/80 pt-14 pb-12">
+    <footer id="footer" className="bg-[#071E12] text-white border-t border-emerald-950 py-8 sm:py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-emerald-900/40">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-emerald-900/50">
           
-          {/* Brand & Mission Column */}
-          <div className="md:col-span-6">
-            <a href="#hero" className="flex items-center gap-2.5 mb-4 inline-flex group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#006633] via-[#008040] to-[#6cff76] text-white flex items-center justify-center font-brand font-black text-xl shadow-xs group-hover:scale-105 transition-all">
+          {/* Brand & Mini Tagline */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-right">
+            <a href="#hero" className="flex items-center gap-2 mb-2 inline-flex">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#006633] via-[#008040] to-[#6cff76] text-white flex items-center justify-center font-brand font-black text-base shadow-xs">
                 Y
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-brand font-black text-2xl text-white tracking-tight leading-none uppercase">
-                    {currentSettings.brandName}
-                  </span>
-                  <span className="w-2 h-2 rounded-full bg-[#6cff76] animate-pulse"></span>
-                </div>
-                <span className="text-[11px] font-medium text-emerald-200/70 tracking-wide mt-0.5">
-                  متجر اشتراكات رقمية
-                </span>
-              </div>
+              <span className="font-brand font-black text-xl text-white tracking-tight uppercase">
+                {currentSettings.brandName}
+              </span>
             </a>
-
-            <p className="text-xs sm:text-sm text-slate-300 max-w-sm leading-relaxed mb-6 font-normal">
-              {currentSettings.footerText}
+            <p className="text-xs text-slate-300 font-normal">
+              متجر الاشتراكات الرقمية وخدمات Premium بالدينار الجزائري 🇩🇿
             </p>
-
-            {/* Dynamic Social Platforms Badges */}
-            {enabledPlatforms.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2.5">
-                {enabledPlatforms.map((platform) => {
-                  const isPrimary = Boolean(platform.isPrimaryOrderPlatform);
-                  const targetUrl = getOrderPlatformUrl(platform.url);
-
-                  return (
-                    <a
-                      key={platform.id}
-                      id={`footer-social-${platform.id}`}
-                      href={targetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
-                        isPrimary
-                          ? 'bg-[#006633] hover:bg-[#005229] text-white border-transparent shadow-md shadow-[#006633]/25'
-                          : 'bg-white/10 text-white hover:bg-white/15 border-white/10'
-                      }`}
-                    >
-                      <SocialIcon icon={platform.icon} className="w-3.5 h-3.5" />
-                      <span>{platform.name}</span>
-                      {isPrimary && <Star className="w-2.5 h-2.5 fill-white text-white ml-0.5" />}
-                    </a>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
-          {/* Quick Links Column */}
-          <div className="md:col-span-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
-              روابط سريعة
-            </h4>
-            <ul className="space-y-2.5 text-xs text-gray-400">
-              <li>
-                <a href="#hero" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
-                  الرئيسية
-                </a>
-              </li>
-              <li>
-                <a href="#products" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
-                  الاشتراكات المتوفرة
-                </a>
-              </li>
-              <li>
-                <a href="#why" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
-                  علاش Yovo؟
-                </a>
-              </li>
-              <li>
-                <a href="#how-it-works" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
-                  كيفاش تطلب؟
-                </a>
-              </li>
-              <li>
-                <a href="#faq" className="hover:text-[#6cff76] transition-colors inline-block font-semibold">
-                  الأسئلة الشائعة
-                </a>
-              </li>
-            </ul>
+          {/* Payment Methods Badges */}
+          <div className="flex items-center gap-2 text-xs text-slate-300">
+            <span className="text-[11px] text-slate-400 font-medium ml-1">طرق الدفع:</span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 text-emerald-200 border border-white/10 text-[11px] font-bold">
+              <Smartphone className="w-3.5 h-3.5 text-[#6cff76]" />
+              BaridiMob
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 text-slate-200 border border-white/10 text-[11px] font-bold">
+              <Building2 className="w-3.5 h-3.5 text-slate-300" />
+              CCP
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 text-amber-200 border border-white/10 text-[11px] font-bold">
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              فليكسي
+            </span>
           </div>
 
-          {/* Contact & Orders Column */}
-          <div className="md:col-span-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
-              التواصل والطلب
-            </h4>
-            <p className="text-xs text-gray-400 leading-relaxed mb-3">
-              للطلب أو الاستفسار عن أي اشتراك، راسلنا مباشرة عبر قنواتنا الرسمية:
-            </p>
-            <ul className="space-y-2 text-xs">
-              {enabledPlatforms.map((platform) => (
-                <li key={platform.id} className="flex items-center gap-2 text-gray-300">
-                  <span className="font-semibold text-gray-400">{platform.name}:</span>
+          {/* Social Platforms Links */}
+          {enabledPlatforms.length > 0 && (
+            <div className="flex items-center gap-2">
+              {enabledPlatforms.map((platform) => {
+                const targetUrl = getOrderPlatformUrl(platform.url);
+                return (
                   <a
-                    href={getOrderPlatformUrl(platform.url)}
+                    key={platform.id}
+                    id={`footer-social-${platform.id}`}
+                    href={targetUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#6cff76] hover:text-white hover:underline font-mono text-[11px] inline-flex items-center gap-0.5 font-bold transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/15 text-white transition-all border border-white/10"
+                    aria-label={platform.name}
                   >
-                    <span>{platform.handleOrDisplay || platform.name}</span>
-                    <ArrowUpLeft className="w-2.5 h-2.5" />
+                    <SocialIcon icon={platform.icon} className="w-3.5 h-3.5 text-[#6cff76]" />
+                    <span>{platform.name}</span>
                   </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+                );
+              })}
+            </div>
+          )}
 
         </div>
 
-        {/* Bottom Legal & Independence Disclaimer */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <div className="text-right">
-            <p className="font-normal text-gray-400">
-              {currentSettings.independentBrandNotice}
-            </p>
-          </div>
+        {/* Minimal Navigation & Copyright */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
+          <nav className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <a href="#hero" className="hover:text-white transition-colors">الرئيسية</a>
+            <a href="#products" className="hover:text-white transition-colors">الاشتراكات</a>
+            <a href="#payment" className="hover:text-white transition-colors">طرق الدفع</a>
+            <a href="#how-it-works" className="hover:text-white transition-colors">كيفاش تطلب؟</a>
+            <a href="#faq" className="hover:text-white transition-colors">الأسئلة الشائعة</a>
+          </nav>
 
-          <div className="text-gray-400 text-left shrink-0 font-medium">
-            © {currentYear} {currentSettings.brandName}. All rights reserved.
+          <div className="text-center sm:text-left">
+            <span>© {currentYear} {currentSettings.brandName}. جميع الحقوق محفوظة.</span>
           </div>
+        </div>
+
+        {/* Legal Disclaimer */}
+        <div className="mt-4 pt-3 border-t border-emerald-950/60 text-center text-[10px] text-slate-500">
+          {currentSettings.independentBrandNotice}
         </div>
 
       </div>
     </footer>
   );
 };
-

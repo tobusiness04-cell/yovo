@@ -115,6 +115,56 @@ export function buildWhatsAppOrderUrl(urlOrPhone?: string, message?: string): st
 }
 
 /**
+ * Safely opens a WhatsApp URL in an external tab or native application.
+ * Prevents "wa.me refused to connect" errors by ensuring WhatsApp URLs are NEVER loaded
+ * directly inside an iframe (which triggers X-Frame-Options: SAMEORIGIN / DENY errors).
+ * 
+ * Works across desktop, Android, iOS, and embedded WebViews.
+ */
+export function openWhatsAppSafely(url: string): boolean {
+  if (!url || typeof window === 'undefined') return false;
+  const targetUrl = url.trim();
+  if (!targetUrl) return false;
+
+  let success = false;
+
+  // 1. Try window.open without 'noopener' in feature string so the browser doesn't force null
+  try {
+    const win = window.open(targetUrl, '_blank');
+    if (win) {
+      success = true;
+      try {
+        win.opener = null;
+      } catch (_) {}
+    }
+  } catch (err) {
+    console.warn('window.open was restricted:', err);
+  }
+
+  // 2. Fallback / complementary synthetic link click with target="_blank" and rel="noopener noreferrer"
+  // This explicitly breaks out of iframe contexts and triggers the OS WhatsApp app on mobile devices
+  try {
+    const link = document.createElement('a');
+    link.href = targetUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 500);
+    success = true;
+  } catch (linkErr) {
+    console.error('Synthetic link click failed:', linkErr);
+  }
+
+  return success;
+}
+
+/**
  * Returns all enabled social platforms ordered by displayOrder, automatically normalizing WhatsApp platforms
  */
 export function getEnabledSocialPlatforms(settings?: StoreConfig): SocialPlatform[] {
@@ -284,7 +334,7 @@ export const storeConfig: StoreConfig = {
 export const navLinks = [
   { label: 'الرئيسية', href: '#hero' },
   { label: 'الاشتراكات', href: '#products' },
-  { label: 'علاش Yovo؟', href: '#why' },
+  { label: 'طرق الدفع', href: '#payment' },
   { label: 'كيفاش تطلب؟', href: '#how-it-works' },
-  { label: 'الأسئلة', href: '#faq' },
+  { label: 'الأسئلة الشائعة', href: '#faq' },
 ];

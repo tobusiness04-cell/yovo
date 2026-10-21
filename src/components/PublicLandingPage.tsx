@@ -1,11 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { LandingPage, Product, ProductPlan } from '../types';
 import {
   ShieldCheck,
   Zap,
   CheckCircle,
-  Copy,
-  ExternalLink,
   ChevronDown,
   ArrowRight,
   Sparkles,
@@ -16,7 +14,7 @@ import {
   Phone,
 } from 'lucide-react';
 import { SocialIcon } from './common/SocialIcon';
-import { buildWhatsAppOrderUrl } from '../config';
+import { buildWhatsAppOrderUrl, openWhatsAppSafely } from '../config';
 
 interface PublicLandingPageProps {
   landingPage: LandingPage;
@@ -55,10 +53,8 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<ProductPlan>(initialPlan);
   const [customerPhone, setCustomerPhone] = useState('');
 
-  // Order modal state
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  // Order submitting state
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
-  const [copiedMessage, setCopiedMessage] = useState(false);
   const [generatedOrderId, setGeneratedOrderId] = useState<string | null>(null);
   const [orderErrorMessage, setOrderErrorMessage] = useState<string | null>(null);
 
@@ -82,65 +78,78 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
 
   // Click "اطلب الآن" handler
   const handleOrderClick = async () => {
+    if (isSubmittingOrder) return;
+    setIsSubmittingOrder(true);
+    setOrderErrorMessage(null);
+
     // 1. Meta Pixel Contact Event
     if (typeof window.fbq === 'function') {
       window.fbq('track', 'Contact');
     }
 
-    setOrderErrorMessage(null);
-
-    // 2. Create Pending Order in Firestore
+    // 2. Create Pending Order via Secure Server API FIRST
     try {
-      setIsSubmittingOrder(true);
-      const planCost = selectedPlan.purchaseCost !== undefined ? selectedPlan.purchaseCost : product.purchaseCost;
-      const planAdCost = selectedPlan.adCost !== undefined ? selectedPlan.adCost : product.adCost;
-      const planOtherCost = selectedPlan.otherCost !== undefined ? selectedPlan.otherCost : product.otherCosts;
-
       const orderId = await onCreatePendingOrder({
         productId: product.id,
         productName: product.name,
         planId: selectedPlan.id,
         planName: selectedPlan.duration,
-        sellingPrice: price,
-        currency,
-        productCost: planCost,
-        adCost: planAdCost,
-        otherCosts: planOtherCost,
         customerPhone: customerPhone.trim() || undefined,
-        customerInstagram: customerPhone.trim() || undefined,
+        customerWhatsApp: customerPhone.trim() || undefined,
         landingPageId: landingPage.slug,
       });
 
       setGeneratedOrderId(orderId);
-      setIsOrderModalOpen(true);
+
+      // 3. Build WhatsApp URL and open directly
+      const currentMessage = `السلام عليكم، أريد طلب اشتراك:
+المنتج: ${product.name}
+الخطة: ${selectedPlan.duration}
+السعر: ${price.toLocaleString()} ${currency}
+${customerPhone.trim() ? `رقم الزبون: ${customerPhone.trim()}` : ''}
+رمز الطلب: ${orderId}
+
+يرجى إرسال معلومات الحساب وتفاصيل الدفع (بريدي موب / CCP). شكراً!`;
+
+      const waUrl = buildWhatsAppOrderUrl(undefined, currentMessage);
+      // Return to main store so when customer returns from WhatsApp, they are back in the store
+      if (onBackToHome) {
+        onBackToHome();
+      }
+
+      if (waUrl) {
+        openWhatsAppSafely(waUrl);
+      }
     } catch (err: any) {
-      console.error('Failed to create pending order in Firestore:', err);
-      // Real order failed: do NOT open modal as if successful
+      console.error('Failed to create pending order via API:', err);
+      // Real order failed: do NOT redirect and show error
       setOrderErrorMessage(
-        'تعذر تسجيل الطلب في النظام حالياً. يرجى التحقق من اتصالك والمحاولة مجدداً.'
+        err?.message || 'تعذر تسجيل الطلب في النظام حالياً. يرجى التحقق من اتصالك والمحاولة مجدداً.'
       );
     } finally {
       setIsSubmittingOrder(false);
     }
   };
 
-  const handleCopyAndOpenWhatsApp = () => {
-    navigator.clipboard.writeText(orderMessage);
-    setCopiedMessage(true);
-    setTimeout(() => setCopiedMessage(false), 2500);
-
-    const waUrl = buildWhatsAppOrderUrl(undefined, orderMessage);
-
-    // Open WhatsApp directly with prefilled message
-    setTimeout(() => {
-      window.open(waUrl, '_blank', 'noopener,noreferrer');
-    }, 300);
-  };
-
-  const handleOpenInstagramFallback = () => {
-    navigator.clipboard.writeText(orderMessage);
-    window.open('https://instagram.com/yovodz', '_blank', 'noopener,noreferrer');
-  };
+  // If customer returns to this landing page tab after an order was generated, return to store
+  useEffect(() => {
+    const handleReturn = () => {
+      if (generatedOrderId && onBackToHome) {
+        onBackToHome();
+      }
+    };
+    window.addEventListener('pageshow', handleReturn);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && generatedOrderId && onBackToHome) {
+        onBackToHome();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('pageshow', handleReturn);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [generatedOrderId, onBackToHome]);
 
   return (
     <div className="min-h-screen bg-[#080B0F] text-white flex flex-col font-sans selection:bg-[#6cff76]/30 selection:text-[#004d26]">
@@ -306,7 +315,7 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
               <span>{isSubmittingOrder ? 'جارٍ تسجيل الطلب...' : (landingPage.ctaText || 'اطلب الآن عبر WhatsApp')}</span>
             </button>
             <p className="text-center text-[11px] text-gray-400 mt-2">
-              الدفع متاح عبر BaridiMob أو CCP مع ضمان استرداد فوري إن لم تستلم حسابك
+              الدفع متاح عبر BaridiMob أو CCP أو فليكسي مع ضمان استرداد فوري إن لم تستلم حسابك
             </p>
           </div>
         </section>
@@ -414,82 +423,6 @@ ${generatedOrderId ? `رمز الطلب: ${generatedOrderId}` : ''}
       <footer className="border-t border-gray-800 py-6 text-center text-xs text-gray-500">
         <p>© {new Date().getFullYear()} YOVO — متجر الاشتراكات الرقمية الموثوق في الجزائر</p>
       </footer>
-
-      {/* Order Confirmation Modal (WhatsApp Flow as Primary) */}
-      {isOrderModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 text-right shadow-2xl relative animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-              <h4 className="text-base font-black text-white flex items-center gap-2">
-                <SocialIcon icon="whatsapp" className="w-5 h-5 text-emerald-400" />
-                <span>إتمام الطلب عبر WhatsApp</span>
-              </h4>
-              <button
-                type="button"
-                onClick={() => setIsOrderModalOpen(false)}
-                className="text-slate-400 hover:text-white text-sm font-bold cursor-pointer"
-              >
-                إغلاق
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-              تم تجهيز رسالة طلبك مع تفاصيل الاشتراك. اضغط لفتح محادثة WhatsApp مباشرة مع الرسالة لإتمام التفعيل فوراً:
-            </p>
-
-            {/* Formatted Message Box */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-4 text-xs font-mono text-slate-200 whitespace-pre-line select-all leading-relaxed">
-              {orderMessage}
-            </div>
-
-            <div className="space-y-2">
-              <a
-                href={buildWhatsAppOrderUrl(undefined, orderMessage)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  try {
-                    navigator.clipboard.writeText(orderMessage);
-                  } catch (e) {}
-                  setCopiedMessage(true);
-                  setTimeout(() => setCopiedMessage(false), 3000);
-                }}
-                className="w-full py-3.5 bg-gradient-to-r from-[#006633] via-[#008844] to-[#10B981] hover:opacity-95 text-white font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-              >
-                {copiedMessage ? (
-                  <>
-                    <CheckCircle className="w-4 h-4 text-emerald-300" />
-                    <span>تم النسخ! فتح WhatsApp...</span>
-                  </>
-                ) : (
-                  <>
-                    <SocialIcon icon="whatsapp" className="w-4 h-4 text-white" />
-                    <span>فتح WhatsApp وإرسال الطلب</span>
-                    <ExternalLink className="w-3.5 h-3.5 ml-1" />
-                  </>
-                )}
-              </a>
-
-              <button
-                type="button"
-                onClick={handleOpenInstagramFallback}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <SocialIcon icon="instagram" className="w-3.5 h-3.5 text-pink-400" />
-                <span>أو الطلب عبر Instagram</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsOrderModalOpen(false)}
-                className="w-full py-2 text-slate-500 hover:text-slate-400 rounded-xl text-xs transition-colors cursor-pointer"
-              >
-                العودة للصفحة
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
